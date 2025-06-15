@@ -21,6 +21,7 @@ export type UserProps = {
   image: string;
   email: string;
   password: string;
+  roleId: string;
 };
 export type LoginProps = {
   email: string;

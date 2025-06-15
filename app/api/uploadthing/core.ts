@@ -7,17 +7,36 @@ const f = createUploadthing();
 export const ourFileRouter = {
   // Define as many FileRoutes as you like, each with a unique routeSlug
   categoryImage: f({ image: { maxFileSize: "1MB" } }).onUploadComplete(
-    async ({ metadata, file }) => {
-      console.log("file url", file.url);
+    async () => {
       return { uploadedBy: "JB" };
     }
   ),
-  blogImage: f({ image: { maxFileSize: "1MB" } }).onUploadComplete(
-    async ({ metadata, file }) => {
-      console.log("file url", file.url);
-      return { uploadedBy: "JB" };
+  // Define as many FileRoutes as you like, each with a unique routeSlug
+  itemImage: f({ image: { maxFileSize: "1MB" } }).onUploadComplete(
+    async ({ file }) => {
+      if (file.size > 1 * 1024 * 1024) {
+        return {
+          error: "File size exceeds 1MB",
+          message: "File size exceeds 1MB",
+        };
+      }
+      return { uploadedBy: "SG" };
     }
   ),
+  itemImages: f({
+    image: { maxFileSize: "1MB", maxFileCount: 4 },
+  }).onUploadComplete(async ({ file }) => {
+    if (file.size > 1 * 1024 * 1024) {
+      return {
+        error: "File size exceeds 1MB",
+        message: "File size exceeds 1MB",
+      };
+    }
+    return { uploadedBy: "SG" };
+  }),
+  blogImage: f({ image: { maxFileSize: "1MB" } }).onUploadComplete(async () => {
+    return { uploadedBy: "SGD" };
+  }),
   fileUploads: f({
     image: { maxFileSize: "1MB", maxFileCount: 4 },
     pdf: { maxFileSize: "1MB", maxFileCount: 4 },
@@ -39,8 +58,7 @@ export const ourFileRouter = {
     // Archive types
     "application/gzip": { maxFileSize: "1MB", maxFileCount: 4 },
     "application/zip": { maxFileSize: "1MB", maxFileCount: 4 },
-  }).onUploadComplete(async ({ metadata, file }) => {
-    console.log("file url", file.url);
+  }).onUploadComplete(async ({ file }) => {
     return { uploadedBy: "JB" };
   }),
   mailAttachments: f({
@@ -64,9 +82,12 @@ export const ourFileRouter = {
     // Archive types
     "application/gzip": { maxFileSize: "1MB", maxFileCount: 4 },
     "application/zip": { maxFileSize: "1MB", maxFileCount: 4 },
-  }).onUploadComplete(async ({ metadata, file }) => {
-    console.log("file url", file.url);
-    return { uploadedBy: "JB" };
+  }).onUploadComplete(async ({ file }) => {
+    //check if the file is bigger than 1MB
+    if (file.size > 1 * 1024 * 1024) {
+      throw new UploadThingError("File size exceeds 1MB");
+    }
+    return { uploadedBy: "SGD" };
   }),
 } satisfies FileRouter;
 

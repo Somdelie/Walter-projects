@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import * as React from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -10,173 +10,178 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@/components/ui/navigation-menu"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
   Menu,
-  Users,
-  BarChart2,
-  FileText,
-  Layout,
-  CloudUpload,
-  Edit3,
-  Database,
-  BarChart,
-  Lock,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
+  ShoppingCart,
+  Heart,
+  User,
+  Search,
+  Package,
+  Building,
+  Home,
+  Wrench,
+  Glasses,
+  DoorOpen,
+} from "lucide-react"
+import { cn } from "@/lib/utils"
+import { ChevronDown } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { getInitials } from "@/lib/generateInitials"
+import type { Session } from "next-auth"
 
-import Logo from "../global/Logo";
-import { Session } from "next-auth";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { getInitials } from "@/lib/generateInitials";
+const productCategories = [
+  {
+    icon: Home,
+    title: "Windows",
+    description: "Premium aluminum windows for residential and commercial use. Energy efficient and durable.",
+    href: "/products?type=WINDOW",
+    featured: true,
+  },
+  {
+    icon: DoorOpen,
+    title: "Doors",
+    description: "High-quality aluminum doors including sliding, hinged, and folding options.",
+    href: "/products?type=DOOR",
+    featured: true,
+  },
+  {
+    icon: Package,
+    title: "Profiles",
+    description: "Structural aluminum profiles for construction and architectural applications.",
+    href: "/products?type=PROFILE",
+  },
+  {
+    icon: Wrench,
+    title: "Hardware",
+    description: "Professional-grade hardware and accessories for aluminum installations.",
+    href: "/products?type=HARDWARE",
+  },
+  {
+    icon: Glasses,
+    title: "Glass",
+    description: "Specialized glass solutions including double glazing and safety glass.",
+    href: "/products?type=GLASS",
+  },
+  {
+    icon: Building,
+    title: "Accessories",
+    description: "Complete range of aluminum accessories and finishing components.",
+    href: "/products?type=ACCESSORY",
+  },
+]
 
-const features = [
+const companyLinks = [
   {
-    icon: Users,
-    title: "Advanced Authentication",
-    description:
-      "Secure and flexible authentication system with role-based access control and multi-provider support.",
-    href: "/features/authentication",
+    title: "About Us",
+    description: "Learn about our commitment to quality aluminum solutions",
+    href: "/about",
   },
   {
-    icon: Layout,
-    title: "Dynamic Dashboard",
-    description:
-      "Beautifully designed, responsive dashboard with data visualization and management tools.",
-    href: "/features/dashboard",
+    title: "Our Projects",
+    description: "Explore our portfolio of completed aluminum installations",
+    href: "/projects",
   },
   {
-    icon: FileText,
-    title: "Reusable Form Components",
-    description:
-      "Streamline your workflows with reusable and customizable form components.",
-    href: "/features/forms",
+    title: "Quality Assurance",
+    description: "Discover our rigorous quality control processes",
+    href: "/quality",
   },
   {
-    icon: BarChart2,
-    title: "Advanced Data Tables",
-    description:
-      "Manage and display data effortlessly with customizable and powerful data tables.",
-    href: "/features/data-tables",
+    title: "Sustainability",
+    description: "Our commitment to environmentally responsible practices",
+    href: "/sustainability",
   },
-  {
-    icon: CloudUpload,
-    title: "Image Upload",
-    description:
-      "Effortless image uploads powered by UploadThing, supporting both single and multiple file uploads.",
-    href: "/features/image-upload",
-  },
-  {
-    icon: Edit3,
-    title: "Rich Text Editor",
-    description:
-      "Seamlessly create and edit rich content using an integrated Quill editor.",
-    href: "/features/rich-text-editor",
-  },
-  {
-    icon: Lock,
-    title: "Secure Authentication",
-    description:
-      "Role-based authentication system with customizable access control.",
-    href: "/features/secure-authentication",
-  },
-  {
-    icon: Database,
-    title: "Prisma ORM",
-    description:
-      "Leverage Prisma ORM for robust and scalable database management in TypeScript.",
-    href: "/features/prisma-orm",
-  },
-  {
-    icon: BarChart,
-    title: "Analytics Integration",
-    description:
-      "Track performance with integrated analytics from PostHog and Vercel for actionable insights.",
-    href: "/features/analytics",
-  },
-];
+]
 
 export default function SiteHeader({ session }: { session: Session | null }) {
-  const [open, setOpen] = React.useState(false);
-  const [showFeatures, setShowFeatures] = React.useState(false);
+  const [open, setOpen] = React.useState(false)
+  const [showProducts, setShowProducts] = React.useState(false)
+  const [showCompany, setShowCompany] = React.useState(false)
+
+  // Mock cart count - replace with actual cart state
+  const cartCount = 3
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
-      <div className="container max-w-7xl mx-auto flex h-14 items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Logo />
-          <NavigationMenu className="hidden md:flex">
+    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
+      <div className="container max-w-7xl mx-auto flex h-16 items-center justify-between px-4">
+        <div className="flex items-center space-x-6">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center space-x-2 text-2xl font-bold text-slate-800 hover:text-blue-600 transition-colors duration-200"
+          >
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-slate-700 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">WP</span>
+            </div>
+            <span>
+              Walter Projects
+            </span>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
                 <Link href="/" legacyBehavior passHref>
-                  <NavigationMenuLink className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                  <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-blue-50 hover:text-blue-600 focus:bg-blue-50 focus:text-blue-600 focus:outline-none">
                     Home
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Features</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="h-10">Products</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="w-[800px] p-4">
-                    <div className="flex items-center justify-between mb-4 pb-2 border-b">
-                      <h4 className="text-lg font-medium">Features</h4>
+                  <div className="w-[900px] p-6">
+                    <div className="flex items-center justify-between mb-6 pb-3 border-b">
+                      <div>
+                        <h4 className="text-lg font-semibold text-slate-800">Our Products</h4>
+                        <p className="text-sm text-slate-600">Premium aluminum solutions for every need</p>
+                      </div>
                       <Link
-                        href="/features"
-                        className="text-sm text-blue-500 hover:underline"
+                        href="/products"
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
                       >
-                        View all
+                        View all products →
                       </Link>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-3 ">
-                      {features.map((feature, index) => (
-                        <Link
-                          key={index}
-                          href={`/feature/${feature.title
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")}`}
-                          className="block group"
-                        >
-                          <div className="flex items-start gap-4">
-                            <div className="p-2 bg-muted rounded-md group-hover:bg-muted/80">
-                              <feature.icon className="h-6 w-6 text-blue-500" />
+                    <div className="grid gap-4 md:grid-cols-3">
+                      {productCategories.map((category, index) => (
+                        <Link key={index} href={category.href} className="block group relative">
+                          <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-blue-50 transition-colors">
+                            <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                              <category.icon className="h-5 w-5 text-blue-600" />
                             </div>
-                            <div>
-                              <h5 className="font-medium mb-1 group-hover:text-blue-500">
-                                {feature.title}
-                              </h5>
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {feature.description}
-                              </p>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h5 className="font-medium text-slate-800 group-hover:text-blue-600 transition-colors">
+                                  {category.title}
+                                </h5>
+                                {category.featured && (
+                                  <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800">
+                                    Popular
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-slate-600 line-clamp-2">{category.description}</p>
                             </div>
                           </div>
                         </Link>
                       ))}
                     </div>
-                    <div className="mt-6 pt-4 border-t">
+                    <div className="mt-6 pt-4 border-t bg-gradient-to-r from-blue-50 to-slate-50 rounded-lg p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium mb-1">Get started</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Am really excited for all these features out of the
-                            box
+                          <h4 className="font-semibold text-slate-800 mb-1">Need Custom Solutions?</h4>
+                          <p className="text-sm text-slate-600">
+                            Get expert consultation for your specific aluminum requirements
                           </p>
                         </div>
-                        <Button asChild variant="secondary">
-                          <Link
-                            target="_blank"
-                            href="https://coding-school-typescript.vercel.app/give-away"
-                          >
-                            Get started
-                          </Link>
+                        <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                          <Link href="/contact">Get Quote</Link>
                         </Button>
                       </div>
                     </div>
@@ -185,127 +190,224 @@ export default function SiteHeader({ session }: { session: Session | null }) {
               </NavigationMenuItem>
 
               <NavigationMenuItem>
-                <Link href="/#pricing" legacyBehavior passHref>
-                  <NavigationMenuLink className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
-                    Pricing
+                <NavigationMenuTrigger className="h-10">Company</NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <div className="w-[500px] p-6">
+                    <div className="mb-4 pb-3 border-b">
+                      <h4 className="text-lg font-semibold text-slate-800">About AlumPro</h4>
+                      <p className="text-sm text-slate-600">Leading aluminum solutions provider</p>
+                    </div>
+                    <div className="grid gap-3">
+                      {companyLinks.map((link, index) => (
+                        <Link key={index} href={link.href} className="block group">
+                          <div className="p-3 rounded-lg hover:bg-blue-50 transition-colors">
+                            <h5 className="font-medium text-slate-800 group-hover:text-blue-600 transition-colors mb-1">
+                              {link.title}
+                            </h5>
+                            <p className="text-sm text-slate-600">{link.description}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+
+              <NavigationMenuItem>
+                <Link href="/contact" legacyBehavior passHref>
+                  <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-blue-50 hover:text-blue-600 focus:bg-blue-50 focus:text-blue-600 focus:outline-none">
+                    Contact
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
         </div>
-        {session ? (
-          <Button asChild variant={"ghost"}>
-            <Link href="/dashboard">
-              <Avatar>
-                <AvatarImage
-                  src={session?.user?.image ?? ""}
-                  alt={session?.user?.name ?? ""}
-                />
-                <AvatarFallback>
-                  {getInitials(session?.user?.name)}
-                </AvatarFallback>
-              </Avatar>
-              <span className="ml-3">Dashboard</span>
+
+        {/* Right Side Actions */}
+        <div className="flex items-center space-x-4">
+          {/* Search - Hidden on mobile */}
+          <Button variant="ghost" size="icon" className="hidden md:flex" asChild>
+            <Link href="/search">
+              <Search className="h-5 w-5" />
             </Link>
           </Button>
-        ) : (
-          <div className="hidden md:flex items-center space-x-4">
-            <Button asChild variant="ghost">
-              <Link href={"/login"}>Log in</Link>
-            </Button>
-            <Button>
-              <Link href="/register">Signup</Link>
-            </Button>
-          </div>
-        )}
 
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-full p-0">
-            <SheetHeader className="border-b p-4">
-              <SheetTitle className="text-left">Navigation</SheetTitle>
-            </SheetHeader>
-            <div className="flex flex-col py-4">
-              <Link
-                href="/"
-                className="px-4 py-2 text-lg font-medium hover:bg-accent"
-                onClick={() => setOpen(false)}
-              >
-                Home
-              </Link>
-              <button
-                className="flex items-center justify-between px-4 py-2 text-lg font-medium hover:bg-accent text-left"
-                onClick={() => setShowFeatures(!showFeatures)}
-              >
-                Features
-                <ChevronDown
-                  className={cn(
-                    "h-5 w-5 transition-transform",
-                    showFeatures && "rotate-180"
+          {session ? (
+            <>
+              {/* Wishlist */}
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/wishlist">
+                  <Heart className="h-5 w-5" />
+                </Link>
+              </Button>
+
+              {/* Cart */}
+              <Button variant="ghost" size="icon" className="relative" asChild>
+                <Link href="/cart">
+                  <ShoppingCart className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-blue-600">
+                      {cartCount}
+                    </Badge>
                   )}
-                />
-              </button>
-              {showFeatures && (
-                <div className="px-4 py-2 space-y-4">
-                  {features.map((feature, index) => (
-                    <Link
-                      key={index}
-                      href={`/feature/${feature.title
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                      className="flex items-start gap-4 py-2"
-                      onClick={() => setOpen(false)}
-                    >
-                      <div className="p-2 bg-muted rounded-md">
-                        <feature.icon className="h-6 w-6 text-blue-500" />
-                      </div>
-                      <div>
-                        <h5 className="font-medium mb-1">{feature.title}</h5>
-                        <p className="text-sm text-muted-foreground">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-              <Link
-                href="/#pricing"
-                className="px-4 py-2 text-lg font-medium hover:bg-accent"
-                onClick={() => setOpen(false)}
-              >
-                Pricing
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="px-4 py-2 text-lg font-medium hover:bg-accent"
-                onClick={() => setOpen(false)}
-              >
-                How it works
-              </Link>
+                </Link>
+              </Button>
+
+              {/* User Menu */}
+              <Button asChild variant="ghost" className="hidden md:flex">
+                <Link href="/dashboard" className="flex items-center space-x-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? ""} />
+                    <AvatarFallback className="bg-blue-100 text-blue-600">
+                      {getInitials(session?.user?.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">Account</span>
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <div className="hidden md:flex items-center space-x-3">
+              <Button asChild variant="ghost">
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                <Link href="/register">Get Started</Link>
+              </Button>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-background">
-              <div className="grid gap-2">
-                <Button
-                  variant="outline"
-                  className="w-full"
+          )}
+
+          {/* Mobile Menu */}
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild className="lg:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full p-0">
+              <SheetHeader className="border-b p-4 bg-slate-50">
+                <SheetTitle className="text-left flex items-center space-x-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-slate-700 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-xs">AP</span>
+                  </div>
+                  <span>AlumPro</span>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col py-4">
+                <Link
+                  href="/"
+                  className="px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors"
                   onClick={() => setOpen(false)}
                 >
-                  Log in
-                </Button>
-                <Button className="w-full" onClick={() => setOpen(false)}>
-                  Sign up
-                </Button>
+                  Home
+                </Link>
+
+                {/* Products Dropdown */}
+                <button
+                  className="flex items-center justify-between px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 text-left transition-colors"
+                  onClick={() => setShowProducts(!showProducts)}
+                >
+                  Products
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", showProducts && "rotate-180")} />
+                </button>
+                {showProducts && (
+                  <div className="px-4 py-2 space-y-2 bg-slate-50">
+                    {productCategories.map((category, index) => (
+                      <Link
+                        key={index}
+                        href={category.href}
+                        className="flex items-start gap-3 py-2 px-2 rounded hover:bg-white transition-colors"
+                        onClick={() => setOpen(false)}
+                      >
+                        <div className="p-1 bg-blue-100 rounded">
+                          <category.icon className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <h5 className="font-medium text-sm">{category.title}</h5>
+                          <p className="text-xs text-slate-600 line-clamp-1">{category.description}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {/* Company Dropdown */}
+                <button
+                  className="flex items-center justify-between px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 text-left transition-colors"
+                  onClick={() => setShowCompany(!showCompany)}
+                >
+                  Company
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", showCompany && "rotate-180")} />
+                </button>
+                {showCompany && (
+                  <div className="px-4 py-2 space-y-1 bg-slate-50">
+                    {companyLinks.map((link, index) => (
+                      <Link
+                        key={index}
+                        href={link.href}
+                        className="block py-2 px-2 text-sm hover:bg-white rounded transition-colors"
+                        onClick={() => setOpen(false)}
+                      >
+                        {link.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                <Link
+                  href="/contact"
+                  className="px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  Contact
+                </Link>
+
+                {session && (
+                  <>
+                    <Link
+                      href="/wishlist"
+                      className="px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      Wishlist
+                    </Link>
+                    <Link
+                      href="/cart"
+                      className="px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center justify-between"
+                      onClick={() => setOpen(false)}
+                    >
+                      Cart
+                      {cartCount > 0 && <Badge className="bg-blue-600 text-white">{cartCount}</Badge>}
+                    </Link>
+                  </>
+                )}
               </div>
-            </div>
-          </SheetContent>
-        </Sheet>
+
+              {/* Mobile Auth Buttons */}
+              <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-slate-50">
+                {session ? (
+                  <Button asChild className="w-full" onClick={() => setOpen(false)}>
+                    <Link href="/dashboard" className="flex items-center justify-center space-x-2">
+                      <User className="h-4 w-4" />
+                      <span>My Account</span>
+                    </Link>
+                  </Button>
+                ) : (
+                  <div className="grid gap-2">
+                    <Button variant="outline" className="w-full" onClick={() => setOpen(false)} asChild>
+                      <Link href="/login">Sign In</Link>
+                    </Button>
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setOpen(false)} asChild>
+                      <Link href="/register">Get Started</Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
-  );
+  )
 }

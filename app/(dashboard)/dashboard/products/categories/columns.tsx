@@ -1,17 +1,12 @@
 "use client";
-
-import Image from "next/image";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import DateColumn from "@/components/DataTableColumns/DateColumn";
-import ImageColumn from "@/components/DataTableColumns/ImageColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import { ColumnDef } from "@tanstack/react-table";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-import { Category } from "@prisma/client";
-export const columns: ColumnDef<Category>[] = [
+import { CategoryWithRelations } from "@/types/category";
+export const columns: ColumnDef<CategoryWithRelations>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -38,11 +33,6 @@ export const columns: ColumnDef<Category>[] = [
     accessorKey: "title",
     header: ({ column }) => <SortableColumn column={column} title="Title" />,
   },
-  {
-    accessorKey: "imageUrl",
-    header: "Category Image",
-    cell: ({ row }) => <ImageColumn row={row} accessorKey="imageUrl" />,
-  },
 
   {
     accessorKey: "createdAt",
@@ -50,6 +40,7 @@ export const columns: ColumnDef<Category>[] = [
     cell: ({ row }) => <DateColumn row={row} accessorKey="createdAt" />,
   },
   {
+    header: "Actions",
     id: "actions",
     cell: ({ row }) => {
       const category = row.original;

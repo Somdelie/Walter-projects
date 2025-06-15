@@ -1,152 +1,411 @@
-// config/sidebar.ts
 import {
-  BaggageClaim,
-  BarChart2,
-  BarChart4,
-  Book,
-  Cable,
-  CircleDollarSign,
-  FolderTree,
-  Home,
-  LucideIcon,
-  Presentation,
-  Settings,
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
   Users,
+  CreditCard,
+  Truck,
+  BarChart3,
+  Settings,
+  FolderOpen,
+  Tag,
+  Star,
+  FileText,
+  UserCog,
+  Warehouse,
+  ShoppingBag,
+  Heart,
+  MessageSquare,
 } from "lucide-react";
 
 export interface ISidebarLink {
   title: string;
   href?: string;
-  icon: LucideIcon;
-  dropdown: boolean;
-  permission: string; // Required permission to view this item
-  dropdownMenu?: MenuItem[];
+  icon: any;
+  permission: string;
+  dropdown?: boolean;
+  dropdownMenu?: {
+    title: string;
+    href: string;
+    permission: string;
+  }[];
 }
-
-type MenuItem = {
-  title: string;
-  href: string;
-  permission: string; // Required permission to view this menu item
-};
 
 export const sidebarLinks: ISidebarLink[] = [
   {
     title: "Dashboard",
     href: "/dashboard",
-    icon: Home,
-    dropdown: false,
+    icon: LayoutDashboard,
     permission: "dashboard.read",
   },
+
+  // Product Management
   {
-    title: "Users",
-    icon: Users,
-    href: "/dashboard/users",
-    dropdown: true,
-    permission: "users.read",
-    dropdownMenu: [
-      {
-        title: "Users",
-        href: "/dashboard/users",
-        permission: "users.read",
-      },
-      {
-        title: "Roles",
-        href: "/dashboard/users/roles",
-        permission: "roles.read",
-      },
-      {
-        title: "Change Password",
-        href: "/dashboard/change-password",
-        permission: "roles.read",
-      },
-      {
-        title: "Profile",
-        href: "/dashboard/profile",
-        permission: "roles.read",
-      },
-    ],
-  },
-  {
-    title: "Inventory",
-    icon: BaggageClaim,
-    dropdown: true,
-    href: "/dashboard/inventory/products",
+    title: "Products",
+    icon: Package,
     permission: "products.read",
+    dropdown: true,
     dropdownMenu: [
+      {
+        title: "All Products",
+        href: "/dashboard/products",
+        permission: "products.read",
+      },
       {
         title: "Categories",
-        href: "/dashboard/inventory/categories",
+        href: "/dashboard/products/categories",
         permission: "categories.read",
       },
       {
-        title: "Products",
-        href: "/dashboard/inventory/products",
-        permission: "products.read",
+        title: "Brands",
+        href: "/dashboard/products/brands",
+        permission: "brands.read",
+      },
+      {
+        title: "Attributes",
+        href: "/dashboard/products/attributes",
+        permission: "products.update",
       },
     ],
   },
+
+  // Inventory Management
   {
-    title: "Sales",
-    icon: CircleDollarSign,
+    title: "Inventory",
+    icon: Warehouse,
+    permission: "inventory.read",
     dropdown: true,
-    href: "/dashboard/sales",
-    permission: "sales.read",
     dropdownMenu: [
       {
-        title: "Sales",
-        href: "/dashboard/sales",
-        permission: "sales.read",
+        title: "Stock Levels",
+        href: "/dashboard/inventory",
+        permission: "inventory.read",
       },
       {
-        title: "Customers",
-        href: "/dashboard/sales/customers",
+        title: "Low Stock Alerts",
+        href: "/dashboard/inventory/low-stock",
+        permission: "inventory.read",
+      },
+      {
+        title: "Stock Movements",
+        href: "/dashboard/inventory/movements",
+        permission: "inventory.read",
+      },
+    ],
+  },
+
+  // Order Management
+  {
+    title: "Orders",
+    icon: ShoppingCart,
+    permission: "orders.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "All Orders",
+        href: "/dashboard/orders",
+        permission: "orders.read",
+      },
+      {
+        title: "Pending Orders",
+        href: "/dashboard/orders/pending",
+        permission: "orders.read",
+      },
+      {
+        title: "Processing",
+        href: "/dashboard/orders/processing",
+        permission: "orders.update",
+      },
+      {
+        title: "Shipped",
+        href: "/dashboard/orders/shipped",
+        permission: "orders.read",
+      },
+      {
+        title: "Delivered",
+        href: "/dashboard/orders/delivered",
+        permission: "orders.read",
+      },
+    ],
+  },
+
+  // Customer Management
+  {
+    title: "Customers",
+    icon: Users,
+    permission: "customers.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "All Customers",
+        href: "/dashboard/customers",
+        permission: "customers.read",
+      },
+      {
+        title: "Customer Orders",
+        href: "/dashboard/customers/orders",
+        permission: "customers.read",
+      },
+      {
+        title: "Customer Addresses",
+        href: "/dashboard/customers/addresses",
         permission: "customers.read",
       },
     ],
   },
+
+  // Payments & Finance
   {
-    title: "Blogs",
-    icon: Book,
-    dropdown: false,
-    href: "/dashboard/blogs",
-    permission: "blogs.read",
-  },
-  {
-    title: "Orders",
-    href: "/dashboard/orders",
-    icon: BarChart2,
-    dropdown: false,
-    permission: "orders.read",
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-    dropdown: false,
-    permission: "settings.read",
-  },
-  {
-    title: "Reports",
-    icon: BarChart4,
+    title: "Payments",
+    icon: CreditCard,
+    permission: "payments.read",
     dropdown: true,
-    href: "/dashboard/reports/products",
-    permission: "reports.read",
     dropdownMenu: [
       {
-        title: "Product Report",
-        href: "/dashboard/reports/products",
-        permission: "reports.read",
+        title: "All Payments",
+        href: "/dashboard/payments",
+        permission: "payments.read",
+      },
+      {
+        title: "Pending Payments",
+        href: "/dashboard/payments/pending",
+        permission: "payments.read",
+      },
+      {
+        title: "Failed Payments",
+        href: "/dashboard/payments/failed",
+        permission: "payments.read",
+      },
+      {
+        title: "Refunds",
+        href: "/dashboard/payments/refunds",
+        permission: "payments.refund",
+      },
+    ],
+  },
+
+  // Delivery Management
+  {
+    title: "Delivery",
+    icon: Truck,
+    permission: "orders.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "Delivery Schedule",
+        href: "/dashboard/delivery/schedule",
+        permission: "orders.update",
+      },
+      {
+        title: "Collections",
+        href: "/dashboard/delivery/collections",
+        permission: "orders.read",
+      },
+      {
+        title: "Tracking",
+        href: "/dashboard/delivery/tracking",
+        permission: "orders.read",
+      },
+    ],
+  },
+
+  // Reviews & Ratings
+  {
+    title: "Reviews",
+    icon: Star,
+    permission: "reviews.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "All Reviews",
+        href: "/dashboard/reviews",
+        permission: "reviews.read",
+      },
+      {
+        title: "Pending Approval",
+        href: "/dashboard/reviews/pending",
+        permission: "reviews.moderate",
+      },
+      {
+        title: "Reported Reviews",
+        href: "/dashboard/reviews/reported",
+        permission: "reviews.moderate",
+      },
+    ],
+  },
+
+  // Reports & Analytics
+  {
+    title: "Reports",
+    icon: BarChart3,
+    permission: "reports.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "Sales Report",
+        href: "/dashboard/reports/sales",
+        permission: "reports.sales",
       },
       {
         title: "Inventory Report",
         href: "/dashboard/reports/inventory",
+        permission: "reports.inventory",
+      },
+      {
+        title: "Customer Report",
+        href: "/dashboard/reports/customers",
+        permission: "reports.customers",
+      },
+      {
+        title: "Product Performance",
+        href: "/dashboard/reports/products",
         permission: "reports.read",
       },
       {
-        title: "Customers Report",
-        href: "/dashboard/reports/customers",
-        permission: "reports.read",
+        title: "Revenue Analytics",
+        href: "/dashboard/reports/revenue",
+        permission: "reports.sales",
       },
     ],
+  },
+
+  // Content Management
+  {
+    title: "Content",
+    icon: FileText,
+    permission: "blogs.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "Blog Posts",
+        href: "/dashboard/content/blogs",
+        permission: "blogs.read",
+      },
+      {
+        title: "Create Post",
+        href: "/dashboard/content/blogs/create",
+        permission: "blogs.create",
+      },
+      {
+        title: "Blog Categories",
+        href: "/dashboard/content/categories",
+        permission: "blogs.read",
+      },
+      {
+        title: "Pages",
+        href: "/dashboard/content/pages",
+        permission: "blogs.read",
+      },
+    ],
+  },
+
+  // User Management (Admin only)
+  {
+    title: "User Management",
+    icon: UserCog,
+    permission: "users.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "All Users",
+        href: "/dashboard/users",
+        permission: "users.read",
+      },
+      {
+        title: "Add User",
+        href: "/dashboard/users/create",
+        permission: "users.create",
+      },
+      {
+        title: "Roles & Permissions",
+        href: "/dashboard/users/roles",
+        permission: "roles.read",
+      },
+      {
+        title: "Staff Members",
+        href: "/dashboard/users/staff",
+        permission: "users.read",
+      },
+    ],
+  },
+
+  // Settings
+  {
+    title: "Settings",
+    icon: Settings,
+    permission: "settings.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "General Settings",
+        href: "/dashboard/settings/general",
+        permission: "settings.read",
+      },
+      {
+        title: "E-commerce Settings",
+        href: "/dashboard/settings/ecommerce",
+        permission: "settings.update",
+      },
+      {
+        title: "Payment Settings",
+        href: "/dashboard/settings/payments",
+        permission: "settings.update",
+      },
+      {
+        title: "Delivery Settings",
+        href: "/dashboard/settings/delivery",
+        permission: "settings.update",
+      },
+      {
+        title: "Email Templates",
+        href: "/dashboard/settings/emails",
+        permission: "settings.update",
+      },
+      {
+        title: "Tax Settings",
+        href: "/dashboard/settings/tax",
+        permission: "settings.update",
+      },
+    ],
+  },
+];
+
+// Customer-specific sidebar links (for customer dashboard)
+export const customerSidebarLinks: ISidebarLink[] = [
+  {
+    title: "Dashboard",
+    href: "/account",
+    icon: LayoutDashboard,
+    permission: "dashboard.read",
+  },
+  {
+    title: "My Orders",
+    href: "/account/orders",
+    icon: ShoppingBag,
+    permission: "orders.read",
+  },
+  {
+    title: "Wishlist",
+    href: "/account/wishlist",
+    icon: Heart,
+    permission: "products.read",
+  },
+  {
+    title: "Addresses",
+    href: "/account/addresses",
+    icon: Truck,
+    permission: "dashboard.read",
+  },
+  {
+    title: "Reviews",
+    href: "/account/reviews",
+    icon: MessageSquare,
+    permission: "reviews.create",
+  },
+  {
+    title: "Profile Settings",
+    href: "/account/settings",
+    icon: Settings,
+    permission: "dashboard.read",
   },
 ];

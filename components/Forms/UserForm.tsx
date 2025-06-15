@@ -28,7 +28,7 @@ import { Lock } from "lucide-react";
 import PasswordInput from "../FormInputs/PasswordInput";
 import TextInput from "../FormInputs/TextInput";
 import FormSelectInput from "../FormInputs/FormSelectInput";
-import ImageInput from "../FormInputs/ImageInput";
+import { ImageInput } from "../FormInputs/ImageInput";
 type UserFormProps = {
   editingId?: string | undefined;
   initialData?: User | undefined | null;
@@ -61,7 +61,7 @@ export default function UserForm({
     value: initialData?.status == true ? "true" : "false",
     label: initialData?.status == true ? "Active" : "Disabled",
   };
-  const initialRoleId = initialData?.roleId;
+  const initialRoleId = initialData && 'roleId' in initialData ? initialData.roleId : undefined;
   const initialRole = roles.find((item) => item.id === initialRoleId);
   const roleOptions = roles.map((role) => {
     return {

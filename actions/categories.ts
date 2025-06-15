@@ -1,93 +1,257 @@
+// actions/categories.ts
 "use server";
 
-import { db } from "@/prisma/db";
-import { CategoryProps } from "@/types/types";
+import { CategoryProps } from "@/types/category";
+import { generateSlug } from "@/lib/generateSlug";
 import { revalidatePath } from "next/cache";
+import { db } from "@/prisma/db";
+import { CategoryFormProps } from "@/components/Forms/CategoryForm";
 
-export async function createCategory(data: CategoryProps) {
-  const slug = data.slug;
-  try {
-    const existingCategory = await db.category.findUnique({
-      where: {
-        slug,
-      },
-    });
-    if (existingCategory) {
-      return existingCategory;
-    }
-    const newCategory = await db.category.create({
-      data,
-    });
-    // console.log(newCategory);
-    revalidatePath("/dashboard/categories");
-    return newCategory;
-  } catch (error) {
-    console.log(error);
-    return null;
-  }
-}
-export async function getAllCategories() {
+// Get all categories with their relationships
+export async function getCategories() {
   try {
     const categories = await db.category.findMany({
-      orderBy: {
-        createdAt: "desc",
+      include: {
+        _count: {
+          select: {
+            Product: true,
+          },
+        },
       },
+      orderBy: [{ title: "asc" }],
     });
 
-    return categories;
+    return {
+      data: categories,
+      error: null,
+    };
   } catch (error) {
-    console.log(error);
-    return null;
+    console.error("Error fetching categories:", error);
+    return {
+      data: [],
+      error: "Failed to fetch categories",
+    };
   }
 }
-export async function updateCategoryById(id: string, data: CategoryProps) {
-  try {
-    const updatedCategory = await db.category.update({
-      where: {
-        id,
-      },
-      data,
-    });
-    revalidatePath("/dashboard/categories");
-    return updatedCategory;
-  } catch (error) {
-    console.log(error);
-  }
-}
+
+// Get single category by ID
 export async function getCategoryById(id: string) {
   try {
     const category = await db.category.findUnique({
-      where: {
-        id,
-      },
-    });
-    return category;
-  } catch (error) {
-    console.log(error);
-  }
-}
-export async function deleteCategory(id: string) {
-  try {
-    const deletedCategory = await db.category.delete({
-      where: {
-        id,
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            Product: true,
+          },
+        },
       },
     });
 
     return {
-      ok: true,
-      data: deletedCategory,
+      data: category,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Error fetching category:", error);
+    return {
+      data: null,
+      error: "Failed to fetch category",
+    };
+  }
+}
+
+// Create new category
+//create a new category
+export async function createCategory(data: CategoryFormProps) {
+  try {
+    // Check if the brand already exists
+    const existingCategory = await db.category.findFirst({
+      where: {
+        slug: data.slug,
+      },
+    });
+    if (existingCategory) {
+      return {
+        status: 400,
+        message: "Category already exists",
+        data: null,
+        error: "",
+      };
+    }
+    const category = await db.category.create({
+      data,
+    });
+    revalidatePath("/dashboard/products/categories");
+    return {
+      status: 200,
+      message: "Category created successfully",
+      data: category,
     };
   } catch (error) {
     console.log(error);
+    return null;
   }
 }
-export async function createBulkCategories(categories: CategoryProps[]) {
+
+// Update category
+export async function updateCategoryById(id: string, data: CategoryProps) {
   try {
-    for (const category of categories) {
-      await createCategory(category);
+    // Check if category exists
+    const existingCategory = await db.category.findUnique({
+      where: { id },
+    });
+
+    if (!existingCategory) {
+      return {
+        data: null,
+        error: "Category not found",
+      };
     }
+
+    // Generate slug if title changed
+    const slug =
+      data.title !== existingCategory.title
+        ? generateSlug(data.title)
+        : existingCategory.slug;
+
+    // Check if new slug conflicts with another category
+    if (slug !== existingCategory.slug) {
+      const slugConflict = await db.category.findUnique({
+        where: { slug },
+      });
+
+      if (slugConflict) {
+        return {
+          data: null,
+          error: "A category with this name already exists",
+        };
+      }
+    }
+
+    const category = await db.category.update({
+      where: { id },
+      data: {
+        title: data.title,
+        slug,
+        description: data.description || null,
+        imageUrl: data.imageUrl || existingCategory.imageUrl,
+      },
+      include: {
+        _count: {
+          select: {
+            Product: true,
+          },
+        },
+      },
+    });
+
+    revalidatePath("/dashboard/products/categories");
+    return {
+      data: category,
+      error: null,
+    };
   } catch (error) {
-    console.log(error);
+    console.error("Error updating category:", error);
+    return {
+      data: null,
+      error: "Failed to update category",
+    };
+  }
+}
+
+// Delete category
+export async function deleteCategoryById(id: string) {
+  try {
+    // Check if category has products
+    const category = await db.category.findUnique({
+      where: { id },
+      include: {
+        Product: true,
+      },
+    });
+
+    if (!category) {
+      return {
+        success: false,
+        error: "Category not found",
+      };
+    }
+
+    if (category.Product.length > 0) {
+      return {
+        success: false,
+        error: `Cannot delete category. It has ${category.Product.length} products assigned to it.`,
+      };
+    }
+
+    await db.category.delete({
+      where: { id },
+    });
+
+    revalidatePath("/dashboard/products/categories");
+    return {
+      success: true,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    return {
+      success: false,
+      error: "Failed to delete category",
+    };
+  }
+}
+
+// Delete multiple categories
+export async function deleteManyCategories(ids: string[]) {
+  try {
+    // Check if any categories have products
+    const categories = await db.category.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+      include: {
+        _count: {
+          select: {
+            Product: true,
+          },
+        },
+      },
+    });
+
+    const categoriesWithProducts = categories.filter(
+      (cat) => cat._count.Product > 0
+    );
+
+    if (categoriesWithProducts.length > 0) {
+      return {
+        success: false,
+        error: `Cannot delete ${categoriesWithProducts.length} categories as they have products assigned.`,
+      };
+    }
+
+    const result = await db.category.deleteMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+
+    revalidatePath("/dashboard/products/categories");
+    return {
+      success: true,
+      error: null,
+      deletedCount: result.count,
+    };
+  } catch (error) {
+    console.error("Error deleting categories:", error);
+    return {
+      success: false,
+      error: "Failed to delete categories",
+    };
   }
 }

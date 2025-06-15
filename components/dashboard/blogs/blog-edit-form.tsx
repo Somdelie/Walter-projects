@@ -3,7 +3,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React, { useState } from "react";
 import VEditor from "./editor";
 import { Button } from "@/components/ui/button";
-import ImageInput from "@/components/FormInputs/ImageInput";
 import {
   Card,
   CardContent,
@@ -20,6 +19,7 @@ import toast from "react-hot-toast";
 import TextArea from "@/components/FormInputs/TextAreaInput";
 import { updateBlogContent, updateMetaData } from "@/actions/blogs";
 import { Loader2 } from "lucide-react";
+import { ImageInput } from "@/components/FormInputs/ImageInput";
 export type MetaPros = {
   description: string;
   title: string;

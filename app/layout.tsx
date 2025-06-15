@@ -7,9 +7,27 @@ import Providers from "@/components/Providers";
 const inter = Rethink_Sans({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Ronix Fit Savers",
-  description: "Join Ronix Savings Group",
+  // this is a aluminum supplier company
+  title: "WalterProjects - Aluminum Supplier Company",  
+  description: "An aluminum supplier company is a business that specializes in the distribution and sale of aluminum products, including raw materials, extrusions, sheets, and fabricated components.",
+  openGraph: {
+    title: "WalterProjects - Aluminum Supplier Company",
+    description: "An aluminum supplier company is a business that specializes in the distribution and sale of aluminum products, including raw materials, extrusions, sheets, and fabricated components.",
+    url: "https://WalterProjects - Aluminum Supplier Company", 
+    siteName: "WalterProjects - Aluminum Supplier Company", 
+    // images: [
+    //   {
+    //     url: "https://WalterProjects - Aluminum Supplier Company", .com/og-image.png",
+    //     width: 1200,
+    //     height: 630,
+    //     alt: "WalterProjects - Aluminum Supplier Company",  Logo",
+    //   },
+    // ],
+    locale: "en_US",
+    type: "website",
+  },
 };
+
 export default function RootLayout({
   children,
 }: Readonly<{

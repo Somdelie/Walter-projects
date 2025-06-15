@@ -1,48 +1,32 @@
-"use client";
-import React, { useState } from "react";
-import Link from "next/link";
-import {
-  Bell,
-  ChevronDown,
-  ChevronRight,
-  ExternalLink,
-  Plus,
-  Power,
-} from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
-import { usePathname, useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
-import Logo from "../global/Logo";
-import { ISidebarLink, sidebarLinks } from "@/config/sidebar";
-import { Session } from "next-auth";
-import { signOut } from "next-auth/react";
-import { NotificationMenu } from "../NotificationMenu";
-import { UserDropdownMenu } from "../UserDropdownMenu";
-// import { NotificationMenu } from "../frontend/NotificationMenu";
-// import { Notification } from "@prisma/client";
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { ChevronDown, ChevronRight, ExternalLink, Building2 } from "lucide-react"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { usePathname, useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { type ISidebarLink, sidebarLinks } from "@/config/sidebar"
+import type { Session } from "next-auth"
+import { signOut } from "next-auth/react"
+import { NotificationMenu } from "../NotificationMenu"
+import { UserDropdownMenu } from "../UserDropdownMenu"
 
 interface SidebarProps {
-  session: Session;
-  notifications?: Notification[];
+  session: Session
+  notifications?: Notification[]
 }
 
 export default function Sidebar({ session, notifications = [] }: SidebarProps) {
-  const router = useRouter();
-  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(
-    null
-  );
-  const pathname = usePathname();
-  const user = session.user;
+  const router = useRouter()
+  const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null)
+  const pathname = usePathname()
+  const user = session.user
 
   // Helper function to check if user has permission
   const hasPermission = (permission: string): boolean => {
-    return user.permissions?.includes(permission) ?? false;
-  };
+    return user.permissions?.includes(permission) ?? false
+  }
 
   // Filter sidebar links based on permissions
   const filterSidebarLinks = (links: ISidebarLink[]): ISidebarLink[] => {
@@ -50,43 +34,47 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
       .filter((link) => hasPermission(link.permission))
       .map((link) => ({
         ...link,
-        dropdownMenu: link.dropdownMenu?.filter((item) =>
-          hasPermission(item.permission)
-        ),
+        dropdownMenu: link.dropdownMenu?.filter((item) => hasPermission(item.permission)),
       }))
-      .filter(
-        (link) =>
-          !link.dropdown || (link.dropdownMenu && link.dropdownMenu.length > 0)
-      );
-  };
+      .filter((link) => !link.dropdown || (link.dropdownMenu && link.dropdownMenu.length > 0))
+  }
 
-  const filteredLinks = filterSidebarLinks(sidebarLinks);
+  const filteredLinks = filterSidebarLinks(sidebarLinks)
 
   async function handleLogout() {
     try {
-      await signOut();
-      router.push("/");
+      await signOut()
+      router.push("/")
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
   }
 
   return (
-    <div className="fixed top-0 left-0 h-full w-[220px] lg:w-[280px] border-r bg-muted/40 hidden md:block overflow-y-auto">
+    <div className="fixed top-0 left-0 h-full w-[220px] lg:w-[280px] border-r border-border bg hidden md:block overflow-y-auto shadow-sm">
       <div className="flex h-full max-h-screen flex-col gap-2">
-        <div className="flex flex-shrink-0 h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-          <Logo href="/dashboard" />
-          <NotificationMenu notifications={notifications} />
+        <div className="flex flex-shrink-0 h-14 items-center border-b border-border px-4 lg:h-[60px] lg:px-6 bg">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-6 w-6 text-orange-600" />
+            <span className="font-bold text-lg text-orange-600">WalterProjects</span>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <NotificationMenu notifications={notifications} />
+          </div>
         </div>
-        <div className="flex-1">
-          <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-            {filteredLinks.map((item, i) => {
-              const Icon = item.icon;
-              const isHrefIncluded =
-                item.dropdownMenu &&
-                item.dropdownMenu.some((link) => link.href === pathname);
 
-              const isOpen = openDropdownIndex === i;
+        <div className="flex-1">
+          <div className="px-4 py-2">
+            <p className="text-xs font-medium text-foreground/60 uppercase tracking-wider mb-2">
+              Main Navigation
+            </p>
+          </div>
+          <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-1">
+            {filteredLinks.map((item, i) => {
+              const Icon = item.icon
+              const isHrefIncluded = item.dropdownMenu && item.dropdownMenu.some((link) => link.href === pathname)
+
+              const isOpen = openDropdownIndex === i
 
               return (
                 <div key={i}>
@@ -95,33 +83,35 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
                       <CollapsibleTrigger
                         onClick={() => setOpenDropdownIndex(isOpen ? null : i)}
                         className={cn(
-                          "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary w-full",
-                          isHrefIncluded && "bg-muted text-primary"
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-foreground transition-all hover:bg-accent hover:text-accent-foreground w-full",
+                          (isHrefIncluded || isOpen) && "bg-accent text-accent-foreground font-medium",
                         )}
                       >
                         <Icon className="h-4 w-4" />
                         {item.title}
                         {isOpen ? (
-                          <ChevronDown className="h-5 w-5 ml-auto flex shrink-0 items-center justify-center rounded-full" />
+                          <ChevronDown className="h-4 w-4 ml-auto flex shrink-0 items-center justify-center" />
                         ) : (
-                          <ChevronRight className="h-5 w-5 ml-auto flex shrink-0 items-center justify-center rounded-full" />
+                          <ChevronRight className="h-4 w-4 ml-auto flex shrink-0 items-center justify-center" />
                         )}
                       </CollapsibleTrigger>
-                      <CollapsibleContent className="dark:bg-slate-950 rounded mt-1">
+                      <CollapsibleContent className="rounded mt-1 pl-4">
                         {item.dropdownMenu?.map((menuItem, i) => (
                           <Link
                             key={i}
                             href={menuItem.href}
                             className={cn(
-                              "mx-4 flex items-center gap-3 rounded-lg px-3 py-1 text-muted-foreground transition-all hover:text-primary justify-between text-xs ml-6",
-                              pathname === menuItem.href &&
-                                "bg-muted text-primary"
+                              "flex items-center gap-2 rounded-lg px-3 py-1.5 text-foreground transition-all hover:bg-accent hover:text-accent-foreground text-xs ml-4",
+                              pathname === menuItem.href && "bg-primary/10 text-primary font-medium",
                             )}
                           >
+                            <div
+                              className={cn(
+                                "h-1.5 w-1.5 rounded-full",
+                                pathname === menuItem.href ? "bg-primary" : "bg-foreground/40",
+                              )}
+                            ></div>
                             {menuItem.title}
-                            <span className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                              <Plus className="w-4 h-4" />
-                            </span>
                           </Link>
                         ))}
                       </CollapsibleContent>
@@ -130,8 +120,8 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
                     <Link
                       href={item.href ?? "#"}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-                        pathname === item.href && "bg-muted text-primary"
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-foreground transition-all hover:bg-accent hover:text-accent-foreground",
+                        pathname === item.href && "bg-primary/10 text-primary font-medium",
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -139,11 +129,18 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
                     </Link>
                   )}
                 </div>
-              );
+              )
             })}
+
+            <div className="mt-6 px-4 py-2">
+              <p className="text-xs font-medium text-foreground/60 uppercase tracking-wider mb-2">
+                External Links
+              </p>
+            </div>
+
             <Link
               href="/"
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-foreground transition-all hover:bg-accent hover:text-accent-foreground"
               target="_blank"
             >
               <ExternalLink className="h-4 w-4" />
@@ -152,13 +149,7 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
           </nav>
         </div>
 
-        {/* <div className="mt-auto p-4">
-          <Button onClick={handleLogout} size="sm" className="w-full">
-            <Power className="h-4 w-4 mr-2" />
-            Logout
-          </Button>
-        </div> */}
-        <div className="p-4">
+        <div className="mt-auto p-4 border-t border-border">
           <UserDropdownMenu
             username={session?.user?.name ?? ""}
             email={session?.user?.email ?? ""}
@@ -170,5 +161,5 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }
