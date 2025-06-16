@@ -45,7 +45,7 @@ export async function getAllProducts() {
       width: product.width ? Number(product.width) : 0,
       height: product.height ? Number(product.height) : 0,
     }));
-
+    console.log("Fetched products:", products);
     return {
       data: products,
       error: null,
@@ -56,6 +56,31 @@ export async function getAllProducts() {
       data: [],
       error: "Failed to fetch products",
     };
+  }
+}
+
+// In your actions/product file
+export async function getFeaturedProducts() {
+  try {
+    const products = await db.product.findMany({
+      where: {
+        isFeatured: true,
+        status: "ACTIVE",
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+      take: 8,
+    });
+
+    return { data: products };
+  } catch (error) {
+    return { data: [] };
   }
 }
 
