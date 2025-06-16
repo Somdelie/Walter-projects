@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { getInitials } from "@/lib/generateInitials"
 import type { Session } from "next-auth"
 import { useCart } from "@/contexts/cart-context"
+import { useWishlist } from "@/contexts/wishlist-context"
 
 const productCategories = [
   {
@@ -102,6 +103,7 @@ export default function SiteHeader({ session }: { session: Session | null }) {
   const [showProducts, setShowProducts] = React.useState(false)
   const [showCompany, setShowCompany] = React.useState(false)
   const { itemCount } = useCart()
+  const { itemCount: wishlistCount } = useWishlist()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
@@ -110,12 +112,12 @@ export default function SiteHeader({ session }: { session: Session | null }) {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center space-x-2 text-2xl font-bold text-slate-800 hover:text-blue-600 transition-colors duration-200"
+            className="flex items-center space-x-2 text-2xl font-bold text-slate-800 hover:text-orange-600 transition-colors duration-200"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-slate-700 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-slate-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">WP</span>
             </div>
-            <span>Walter Projects</span>
+            <span className="text-primary">Walter Projects</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -233,9 +235,14 @@ export default function SiteHeader({ session }: { session: Session | null }) {
           {session ? (
             <>
               {/* Wishlist */}
-              <Button variant="ghost" size="icon" asChild>
+              <Button variant="ghost" size="icon" className="relative" asChild>
                 <Link href="/wishlist">
                   <Heart className="h-5 w-5" />
+                  {wishlistCount > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-600">
+                      {wishlistCount}
+                    </Badge>
+                  )}
                 </Link>
               </Button>
 
@@ -364,10 +371,11 @@ export default function SiteHeader({ session }: { session: Session | null }) {
                   <>
                     <Link
                       href="/wishlist"
-                      className="px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                      className="px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center justify-between"
                       onClick={() => setOpen(false)}
                     >
                       Wishlist
+                      {wishlistCount > 0 && <Badge className="bg-red-600 text-white">{wishlistCount}</Badge>}
                     </Link>
                     <Link
                       href="/cart"

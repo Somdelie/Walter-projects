@@ -5,6 +5,7 @@ import { Toaster } from "react-hot-toast";
 import Providers from "@/components/Providers";
 import { CartProvider } from "@/contexts/cart-context";
 import { getAuthenticatedUser } from "@/config/useAuth";
+import { WishlistProvider } from "@/contexts/wishlist-context";
 // import FooterBanner from "@/components/Footer";
 const inter = Rethink_Sans({ subsets: ["latin"], display: "swap" });
 
@@ -41,9 +42,12 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Providers>  <CartProvider user={user}>{children}
+       <Providers>
+          <CartProvider user={user}>
+            <WishlistProvider user={user}>
+              {children}
+            </WishlistProvider>
           </CartProvider>
-
         </Providers>
       </body>
     </html>

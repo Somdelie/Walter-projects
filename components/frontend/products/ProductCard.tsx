@@ -13,6 +13,7 @@ import { formatPrice } from "@/lib/formatPrice"
 import type { Product } from "@prisma/client"
 import { useCartSafe } from "@/contexts/cart-context"
 import { toast } from "sonner"
+import { useWishlistSafe } from "@/contexts/wishlist-context"
 
 interface ProductWithDetails extends Product {
   category: {
@@ -32,9 +33,13 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, viewMode, index }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false)
   const [imageError, setImageError] = useState(false)
   const cart = useCartSafe()
+  const wishlist = useWishlistSafe()
+
+  // Remove the local isWishlisted state since we'll get it from context
+  const isWishlisted = wishlist ? wishlist.isItemInWishlist(product.id) : false
+  const isWishlistLoading = wishlist ? wishlist.isItemLoading(product.id) : false
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -54,8 +59,16 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
     e.preventDefault()
     e.stopPropagation()
 
-    setIsWishlisted(!isWishlisted)
-    // TODO: Implement wishlist API calls
+    if (!wishlist) {
+      toast.error("Wishlist not available. Please refresh the page.")
+      return
+    }
+
+    if (isWishlisted) {
+      await wishlist.removeItem(product.id)
+    } else {
+      await wishlist.addItem(product.id)
+    }
   }
 
   const discountPercentage =
@@ -99,13 +112,18 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleToggleWishlist}
+                    disabled={isWishlistLoading}
                     className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all duration-200"
                   >
-                    <Heart
-                      className={`h-4 w-4 transition-colors ${
-                        isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600 hover:text-red-500"
-                      }`}
-                    />
+                    {isWishlistLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-gray-600" />
+                    ) : (
+                      <Heart
+                        className={`h-4 w-4 transition-colors ${
+                          isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600 hover:text-red-500"
+                        }`}
+                      />
+                    )}
                   </motion.button>
 
                   {/* Discount Badge */}
@@ -159,8 +177,8 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                       onClick={handleAddToCart}
                       disabled={isItemLoading || isOutOfStock || isInCart}
                       className={`w-full font-medium ${
-                        isInCart 
-                          ? "bg-green-500 hover:bg-green-600 text-white" 
+                        isInCart
+                          ? "bg-green-500 hover:bg-green-600 text-white"
                           : "bg-red-500 hover:bg-red-600 text-white"
                       }`}
                     >
@@ -210,13 +228,18 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={handleToggleWishlist}
+                  disabled={isWishlistLoading}
                   className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <Heart
-                    className={`h-4 w-4 transition-colors ${
-                      isWishlisted ? "fill-red-500 text-red-500" : "text-gray-400 hover:text-red-500"
-                    }`}
-                  />
+                  {isWishlistLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  ) : (
+                    <Heart
+                      className={`h-4 w-4 transition-colors ${
+                        isWishlisted ? "fill-red-500 text-red-500" : "text-gray-400 hover:text-red-500"
+                      }`}
+                    />
+                  )}
                 </motion.button>
               </div>
             </div>
@@ -286,9 +309,7 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                 onClick={handleAddToCart}
                 disabled={isItemLoading || isOutOfStock || isInCart}
                 className={`w-full font-medium ${
-                  isInCart 
-                    ? "bg-green-500 hover:bg-green-600 text-white" 
-                    : "bg-red-500 hover:bg-red-600 text-white"
+                  isInCart ? "bg-green-500 hover:bg-green-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
                 }`}
               >
                 {isItemLoading ? (
