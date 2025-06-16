@@ -45,7 +45,7 @@ export async function getAllProducts() {
       width: product.width ? Number(product.width) : 0,
       height: product.height ? Number(product.height) : 0,
     }));
-    console.log("Fetched products:", products);
+    // console.log("Fetched products:", products);
     return {
       data: products,
       error: null,

@@ -6,6 +6,7 @@ import { ArrowRight, Home, DoorOpen, Package, Wrench, Glasses, Building } from "
 interface Category {
   id: string
   title: string
+  imageUrl?: string 
 }
 
 interface CategoriesShowcaseProps {
@@ -21,22 +22,14 @@ const categoryIcons = {
   Accessories: Building,
 }
 
-const categoryImages = {
-  Windows: "/placeholder.svg?height=300&width=400",
-  Doors: "/placeholder.svg?height=300&width=400",
-  Profiles: "/placeholder.svg?height=300&width=400",
-  Hardware: "/placeholder.svg?height=300&width=400",
-  Glass: "/placeholder.svg?height=300&width=400",
-  Accessories: "/placeholder.svg?height=300&width=400",
-}
 
 export default function CategoriesShowcase({ categories }: CategoriesShowcaseProps) {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-10 bg-white">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Product Categories</h2>
+        <div className="text-center mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-orange-900 mb-4">Product Categories</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Comprehensive range of aluminum solutions for every construction and architectural need
           </p>
@@ -46,8 +39,8 @@ export default function CategoriesShowcase({ categories }: CategoriesShowcasePro
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {categories.slice(0, 6).map((category, index) => {
             const IconComponent = categoryIcons[category.title as keyof typeof categoryIcons] || Package
-            const imageUrl =
-              categoryImages[category.title as keyof typeof categoryImages] || "/placeholder.svg?height=300&width=400"
+            // const imageUrl =
+            //   categoryImages[category.title as keyof typeof categoryImages] || "/aluminum-sheets.jpg"
 
             return (
               <Link key={category.id} href={`/products?category=${category.id}`}>
@@ -56,7 +49,7 @@ export default function CategoriesShowcase({ categories }: CategoriesShowcasePro
                     {/* Image */}
                     <div className="relative h-48 overflow-hidden bg-gray-100">
                       <Image
-                        src={imageUrl || "/placeholder.svg"}
+                        src={category.imageUrl || "/placeholder.svg"}
                         alt={category.title}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform duration-500"

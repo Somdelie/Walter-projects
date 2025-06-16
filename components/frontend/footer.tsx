@@ -1,218 +1,192 @@
-"use client";
-import Image from "next/image";
-import Link from "next/link";
-import ThemeButton from "./theme-button";
-import { useRouter } from "next/navigation";
-import { getContactInfo } from "@/config/meta";
-import Logo from "../global/Logo";
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Mail,
+  Phone,
+  MapPin,
+  Home,
+  DoorOpen,
+  Package,
+  Wrench,
+  Glasses,
+  Building,
+} from "lucide-react"
 
-export default function Footer() {
-  const navItems = [
-    { label: "Home", href: "/" },
-    { label: "Pricing", href: "/#pricing" },
-    { label: "Documentation", href: "/docs" },
-    { label: "Showcase", href: "/showcase" },
-    { label: "Agency Site", href: "/agency" },
-    // { label: "Blog", href: "/blog" },
-    { label: "Support", href: "https://wa.me/message/5USU26346OWRF1" },
-  ];
+const productCategories = [
+  { name: "Windows", href: "/products?type=WINDOW", icon: Home },
+  { name: "Doors", href: "/products?type=DOOR", icon: DoorOpen },
+  { name: "Profiles", href: "/products?type=PROFILE", icon: Package },
+  { name: "Hardware", href: "/products?type=HARDWARE", icon: Wrench },
+  { name: "Glass", href: "/products?type=GLASS", icon: Glasses },
+  { name: "Accessories", href: "/products?type=ACCESSORY", icon: Building },
+]
 
-  const serviceItems = [
-    { label: "Next.js Starter Kit", href: "/" },
-    {
-      label: "Need Custom Development",
-      href: "https://wa.me/message/5USU26346OWRF1",
-    },
-    {
-      label: "Need Deployment Support",
-      href: "https://wa.me/message/5USU26346OWRF1",
-    },
-    {
-      label: "Need UI Customization",
-      href: "https://wa.me/message/5USU26346OWRF1",
-    },
-  ];
-  const router = useRouter();
-  const { email, fullAddress, mainPhone } = getContactInfo();
+const companyLinks = [
+  { name: "About Us", href: "/about" },
+  { name: "Our Story", href: "/story" },
+  { name: "Careers", href: "/careers" },
+  { name: "News & Updates", href: "/news" },
+  { name: "Quality Assurance", href: "/quality" },
+  { name: "Sustainability", href: "/sustainability" },
+]
+
+const supportLinks = [
+  { name: "Contact Us", href: "/contact" },
+  { name: "Technical Support", href: "/support" },
+  { name: "Installation Guide", href: "/installation" },
+  { name: "Warranty", href: "/warranty" },
+  { name: "Returns", href: "/returns" },
+  { name: "FAQ", href: "/faq" },
+]
+
+const legalLinks = [
+  { name: "Privacy Policy", href: "/privacy" },
+  { name: "Terms of Service", href: "/terms" },
+  { name: "Cookie Policy", href: "/cookies" },
+  { name: "Shipping Policy", href: "/shipping" },
+]
+
+export default function SiteFooter() {
   return (
-    <footer className="bg-gray-900 text-white py-16 px-4 md:px-8 lg:px-16 rounded-t-[2.5rem] relative overflow-hidden">
-      {/* Background gradient effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-72 h-72 bg-green-500/10 rounded-full blur-3xl"></div>
-      </div>
-
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-
-      <div className="relative">
-        {/* Top Section */}
-        <div className="max-w-7xl mx-auto mb-16 flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div className="mb-8 md:mb-0">
-            <h2 className="text-2xl md:text-3xl font-semibold mb-4 bg-gradient-to-r from-emerald-400 to-green-500 bg-clip-text text-transparent">
-              Build faster with HubStack
-            </h2>
-            <p className="text-gray-400 max-w-xl text-base">
-              Start your next project with our premium starter kit. Get all the
-              features you need to build modern web applications.
-            </p>
-          </div>
-          <div className="flex gap-4 md:flex-row flex-col">
-            <button
-              onClick={() => router.push("/contact")}
-              className="px-6 md:!py-1 py-3 border border-gray-700 hover:border-emerald-500 rounded-full text-gray-300 hover:text-emerald-400 transition-all duration-300 block"
-            >
-              Get Support
-            </button>
-            <ThemeButton
-              href="https://gmukejohnbaptist.gumroad.com/l/hubstack-simple-auth"
-              title="Purchase Now"
-            />
-          </div>
-        </div>
-
-        {/* Main Footer Content */}
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 mb-16">
-            {/* Logo and Social Media Section */}
-            <div className="lg:col-span-4">
-              <Logo variant="dark" />
-              <div className="flex flex-col mt-6">
-                <h3 className="text-base font-semibold mb-4 text-gray-200">
-                  Social Media Links
-                </h3>
-                <div className="flex gap-4">
-                  {[
-                    "https://cdn-icons-png.flaticon.com/128/5968/5968764.png",
-                    "https://cdn-icons-png.flaticon.com/128/3670/3670151.png",
-                    "https://cdn-icons-png.flaticon.com/128/145/145807.png",
-                    "https://cdn-icons-png.flaticon.com/128/3670/3670176.png",
-                  ].map((social) => (
-                    <Link
-                      key={social}
-                      href="#"
-                      className="w-10 h-10 flex items-center justify-center bg-gray-800 rounded-full hover:bg-emerald-500/20 transition-all duration-300"
-                    >
-                      <Image
-                        src={social}
-                        alt={`${social} icon`}
-                        width={20}
-                        height={20}
-                        className="opacity-75 hover:opacity-100 transition-opacity"
-                      />
-                    </Link>
-                  ))}
+    <footer className="bg-slate-900 text-white">
+      {/* Main Footer Content */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          {/* Company Info */}
+          <div className="lg:col-span-2 space-y-6">
+            <div>
+              <Link href="/" className="flex items-center space-x-2 text-2xl font-bold mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-slate-700 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">WP</span>
                 </div>
+                <span>WalterProjects</span>
+              </Link>
+              <p className="text-slate-300 leading-relaxed max-w-md">
+                Leading supplier of premium aluminum windows, doors, and profiles. Serving professionals and homeowners
+                with quality solutions for over 25 years.
+              </p>
+            </div>
+
+            {/* Contact Info */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-slate-300">
+                <MapPin className="h-5 w-5 text-blue-400 flex-shrink-0" />
+                <span>123 Industrial Avenue, Johannesburg, 2000</span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-300">
+                <Phone className="h-5 w-5 text-blue-400 flex-shrink-0" />
+                <span>+27 11 123 4567</span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-300">
+                <Mail className="h-5 w-5 text-blue-400 flex-shrink-0" />
+                <span>admin@cautiousndlovu.co.za</span>
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="lg:col-span-2">
-              <h3 className="text-base font-semibold mb-4 text-gray-200">
-                Quick Links
-              </h3>
-              <ul className="space-y-3">
-                {navItems.map((item, i) => (
-                  <li key={i}>
-                    <Link
-                      href={item.href}
-                      className="text-gray-400 hover:text-emerald-400 transition-colors text-sm flex items-center gap-2"
-                    >
-                      <span className="w-1 h-1 bg-emerald-500 rounded-full opacity-0 transition-opacity group-hover:opacity-100"></span>
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Services */}
-            <div className="lg:col-span-3">
-              <h3 className="text-base font-semibold mb-4 text-gray-200">
-                Services
-              </h3>
-              <ul className="space-y-3">
-                {serviceItems.slice(0, 6).map((service, i) => (
-                  <li key={i}>
-                    <Link
-                      href={service.href}
-                      className="text-gray-400 hover:text-emerald-400 transition-colors text-sm flex items-center gap-2"
-                    >
-                      <span className="w-1 h-1 bg-emerald-500 rounded-full opacity-0 transition-opacity group-hover:opacity-100"></span>
-                      {service.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Contact Information */}
-            <div className="lg:col-span-3">
-              <h3 className="text-base font-semibold mb-4 text-gray-200">
-                Contact Information
-              </h3>
-              <ul className="space-y-4">
-                <li className="text-gray-400 text-sm flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center mt-0.5">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                  </span>
-                  Phone: {mainPhone}
-                </li>
-                <li className="text-gray-400 text-sm flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center mt-0.5">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                  </span>
-                  Email: {email}
-                </li>
-                <li className="text-gray-400 text-sm flex items-start gap-3">
-                  <span className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center mt-0.5">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                  </span>
-                  Address:
-                  <br />
-                  {fullAddress}
-                  {/* <br />
-                  Wellness City, 56789 */}
-                </li>
-              </ul>
+            {/* Social Links */}
+            <div className="flex space-x-4">
+              <Link href="#" className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors">
+                <Facebook className="h-5 w-5" />
+              </Link>
+              <Link href="#" className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors">
+                <Twitter className="h-5 w-5" />
+              </Link>
+              <Link href="#" className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors">
+                <Instagram className="h-5 w-5" />
+              </Link>
+              <Link href="#" className="p-2 bg-slate-800 rounded-lg hover:bg-blue-600 transition-colors">
+                <Linkedin className="h-5 w-5" />
+              </Link>
             </div>
           </div>
 
-          {/* Footer Bottom */}
-          <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-gray-400 text-sm">
-              © {new Date().getFullYear()}{" "}
-              <Link
-                href="/"
-                className="hover:text-emerald-400 transition-colors"
-              >
-                Hubstack
-              </Link>{" "}
-              |
-              <Link
-                href="#"
-                className="hover:text-emerald-400 transition-colors ml-2"
-              >
-                Privacy Policy
-              </Link>{" "}
-              |
-              <Link
-                href="#"
-                className="hover:text-emerald-400 transition-colors ml-2"
-              >
-                Terms & Conditions
-              </Link>{" "}
-              |
-              <Link
-                href="#"
-                className="hover:text-emerald-400 transition-colors ml-2"
-              >
-                Accessibility
-              </Link>
+          {/* Products */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6">Products</h3>
+            <ul className="space-y-3">
+              {productCategories.map((category) => (
+                <li key={category.name}>
+                  <Link
+                    href={category.href}
+                    className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+                  >
+                    <category.icon className="h-4 w-4" />
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6">Company</h3>
+            <ul className="space-y-3">
+              {companyLinks.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-slate-300 hover:text-white transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support */}
+          <div>
+            <h3 className="text-lg font-semibold mb-6">Support</h3>
+            <ul className="space-y-3">
+              {supportLinks.map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-slate-300 hover:text-white transition-colors">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Newsletter Signup */}
+        <div className="mt-16 pt-8 border-t border-slate-800">
+          <div className="max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Stay Updated</h3>
+            <p className="text-slate-300 mb-4">
+              Get the latest product updates and industry news delivered to your inbox.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400"
+              />
+              <Button className="bg-primary hover:bg-primary/95 flex-shrink-0">Subscribe</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Footer */}
+      <div className="border-t border-slate-800">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-slate-400 text-sm">© 2024 WalterProjects. All rights reserved.</div>
+
+            <div className="flex flex-wrap gap-6 text-sm">
+              {legalLinks.map((link) => (
+                <Link key={link.name} href={link.href} className="text-slate-400 hover:text-white transition-colors">
+                  {link.name}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
       </div>
     </footer>
-  );
+  )
 }

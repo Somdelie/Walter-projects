@@ -8,6 +8,7 @@ import ProductSort from "./ProductSort"
 import { Grid, List, Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import type { Product } from "@prisma/client"
 
 interface ProductWithDetails extends Product {
@@ -80,26 +81,31 @@ export default function ProductsListing({ products, categories, searchParams, to
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-4 sm:px-0">
       {/* Results Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-gray-900">
-            {searchParams.search ? `Search Results for "${searchParams.search}"` : "All Products"}
+      <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
+            {searchParams.search ? `Search Results` : "All Products"}
           </h2>
-          <p className="text-gray-600">
+          {searchParams.search && (
+            <p className="text-sm text-gray-600 break-words">
+              for "{searchParams.search}"
+            </p>
+          )}
+          <p className="text-sm sm:text-base text-gray-600">
             Showing {products.length} of {totalProducts} products
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
           {/* View Mode Toggle */}
           <div className="flex items-center border rounded-lg p-1">
             <Button
               variant={viewMode === "grid" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("grid")}
-              className="px-3"
+              className="px-2 sm:px-3"
             >
               <Grid className="h-4 w-4" />
             </Button>
@@ -107,20 +113,40 @@ export default function ProductsListing({ products, categories, searchParams, to
               variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("list")}
-              className="px-3"
+              className="px-2 sm:px-3"
             >
               <List className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Mobile Filter Toggle */}
-          <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="lg:hidden">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
+          {/* Mobile Filter Sheet */}
+          <div className="lg:hidden">
+            <Sheet open={showFilters} onOpenChange={setShowFilters}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">Filters</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 sm:w-96">
+                <SheetHeader>
+                  <SheetTitle>Filter Products</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6">
+                  <ProductFilters
+                    categories={categories}
+                    searchParams={searchParams}
+                    onFilterChange={() => setShowFilters(false)}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
 
-          {/* Sort */}
-          <ProductSort currentSort={searchParams.sort} />
+          {/* Sort - Make responsive */}
+          <div className="min-w-0 flex-shrink">
+            <ProductSort currentSort={searchParams.sort} />
+          </div>
         </div>
       </div>
 
@@ -129,29 +155,31 @@ export default function ProductsListing({ products, categories, searchParams, to
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-wrap items-center gap-2"
+          className="space-y-2"
         >
           <span className="text-sm font-medium text-gray-700">Active filters:</span>
-          {activeFilters.map((filter) => (
-            <Badge
-              key={filter?.key}
-              variant="secondary"
-              className="flex items-center gap-1 cursor-pointer hover:bg-gray-200"
-              onClick={() => clearFilter(filter?.key)}
-            >
-              {filter?.label}
-              <X className="h-3 w-3" />
-            </Badge>
-          ))}
-          <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-xs">
-            Clear all
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {activeFilters.map((filter) => (
+              <Badge
+                key={filter?.key}
+                variant="secondary"
+                className="flex items-center gap-1 cursor-pointer hover:bg-gray-200 text-xs sm:text-sm max-w-[200px]"
+                onClick={() => clearFilter(filter?.key)}
+              >
+                <span className="truncate">{filter?.label}</span>
+                <X className="h-3 w-3 flex-shrink-0" />
+              </Badge>
+            ))}
+            <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-xs h-auto py-1">
+              Clear all
+            </Button>
+          </div>
         </motion.div>
       )}
 
-      <div className="flex gap-8">
-        {/* Filters Sidebar */}
-        <div className={`${showFilters ? "block" : "hidden"} lg:block w-full lg:w-64 flex-shrink-0`}>
+      <div className="flex gap-4 lg:gap-8">
+        {/* Desktop Filters Sidebar */}
+        <div className="hidden lg:block w-64 flex-shrink-0">
           <ProductFilters
             categories={categories}
             searchParams={searchParams}
@@ -160,18 +188,18 @@ export default function ProductsListing({ products, categories, searchParams, to
         </div>
 
         {/* Products Grid/List */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {products.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
-              <div className="max-w-md mx-auto">
-                <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Filter className="h-8 w-8 text-gray-400" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 sm:py-16">
+              <div className="max-w-md mx-auto px-4">
+                <div className="w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Filter className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-4">
                   Try adjusting your filters or search terms to find what you're looking for.
                 </p>
-                <Button onClick={clearAllFilters} variant="outline">
+                <Button onClick={clearAllFilters} variant="outline" size="sm">
                   Clear all filters
                 </Button>
               </div>
@@ -186,7 +214,7 @@ export default function ProductsListing({ products, categories, searchParams, to
                 transition={{ duration: 0.2 }}
                 className={
                   viewMode === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr"
+                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6 auto-rows-fr"
                     : "space-y-4"
                 }
               >

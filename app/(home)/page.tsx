@@ -1,11 +1,5 @@
 import { Suspense } from "react"
 import { getAllProducts, getFeaturedProducts } from "@/actions/product"
-// import FeaturedProducts from "@/components/home/FeaturedProducts"
-// import CategoriesShowcase from "@/components/home/CategoriesShowcase"
-// import WhyChooseUs from "@/components/home/WhyChooseUs"
-// import StatsSection from "@/components/home/StatsSection"
-// import TestimonialsSection from "@/components/home/TestimonialsSection"
-// import CTASection from "@/components/home/CTASection"
 import type { Metadata } from "next"
 import { getCategories } from "@/actions/categories"
 import HeroSection from "@/components/frontend/home/HeroSection"
@@ -37,7 +31,12 @@ export default async function HomePage() {
 
 
   const products = featuredProductsResult.data || []
-  const categories = categoriesResult.data || []
+  const categories = (categoriesResult.data || []).map((category) => ({
+    ...category,
+    imageUrl: category.imageUrl ?? undefined,
+  }))
+
+  console.log(categories)
 
   // Filter featured products
   const featuredProducts = products.filter((product) => product.isFeatured && product.status === "ACTIVE").slice(0, 8)

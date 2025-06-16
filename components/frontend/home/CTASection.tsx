@@ -4,7 +4,7 @@ import { ArrowRight, Phone, Mail } from "lucide-react"
 
 export default function CTASection() {
   return (
-    <section className="py-20 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+    <section className="py-10 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to Start Your Project?</h2>
@@ -14,7 +14,7 @@ export default function CTASection() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
               <Link href="/contact">
                 Get Free Quote
@@ -34,7 +34,7 @@ export default function CTASection() {
             </div>
             <div className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              <span>info@alumpro.co.za</span>
+              <span>admin@cautiousndlovu.co.za</span>
             </div>
           </div>
         </div>

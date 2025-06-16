@@ -543,10 +543,12 @@ const onSubmit = async (data: ProductCreateData) => {
           getItemDate: (item) => new Date(item.createdAt ?? 0),
         }}
         renderRowActions={(product) => (
-          <TableActions.RowActions
-            onEdit={() => handleEditClick(product)}
-            onDelete={() => handleDeleteClick(product)}
-          />
+         <div onClick={(e) => e.stopPropagation()}>
+    <TableActions.RowActions
+      onEdit={() => handleEditClick(product)}
+      onDelete={() => handleDeleteClick(product)}
+    />
+  </div>
         )}
       />
 
