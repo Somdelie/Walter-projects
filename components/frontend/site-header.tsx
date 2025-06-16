@@ -31,6 +31,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { getInitials } from "@/lib/generateInitials"
 import type { Session } from "next-auth"
+import { useCart } from "@/contexts/cart-context"
 
 const productCategories = [
   {
@@ -100,9 +101,7 @@ export default function SiteHeader({ session }: { session: Session | null }) {
   const [open, setOpen] = React.useState(false)
   const [showProducts, setShowProducts] = React.useState(false)
   const [showCompany, setShowCompany] = React.useState(false)
-
-  // Mock cart count - replace with actual cart state
-  const cartCount = 3
+  const { itemCount } = useCart()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
@@ -116,9 +115,7 @@ export default function SiteHeader({ session }: { session: Session | null }) {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-slate-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">WP</span>
             </div>
-            <span>
-              Walter Projects
-            </span>
+            <span>Walter Projects</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -194,7 +191,7 @@ export default function SiteHeader({ session }: { session: Session | null }) {
                 <NavigationMenuContent>
                   <div className="w-[500px] p-6">
                     <div className="mb-4 pb-3 border-b">
-                      <h4 className="text-lg font-semibold text-slate-800">About AlumPro</h4>
+                      <h4 className="text-lg font-semibold text-slate-800">About Walter Projects</h4>
                       <p className="text-sm text-slate-600">Leading aluminum solutions provider</p>
                     </div>
                     <div className="grid gap-3">
@@ -246,9 +243,9 @@ export default function SiteHeader({ session }: { session: Session | null }) {
               <Button variant="ghost" size="icon" className="relative" asChild>
                 <Link href="/cart">
                   <ShoppingCart className="h-5 w-5" />
-                  {cartCount > 0 && (
+                  {itemCount > 0 && (
                     <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-blue-600">
-                      {cartCount}
+                      {itemCount}
                     </Badge>
                   )}
                 </Link>
@@ -289,9 +286,9 @@ export default function SiteHeader({ session }: { session: Session | null }) {
               <SheetHeader className="border-b p-4 bg-slate-50">
                 <SheetTitle className="text-left flex items-center space-x-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-slate-700 rounded flex items-center justify-center">
-                    <span className="text-white font-bold text-xs">AP</span>
+                    <span className="text-white font-bold text-xs">WP</span>
                   </div>
-                  <span>AlumPro</span>
+                  <span>Walter Projects</span>
                 </SheetTitle>
               </SheetHeader>
               <div className="flex flex-col py-4">
@@ -378,7 +375,7 @@ export default function SiteHeader({ session }: { session: Session | null }) {
                       onClick={() => setOpen(false)}
                     >
                       Cart
-                      {cartCount > 0 && <Badge className="bg-blue-600 text-white">{cartCount}</Badge>}
+                      {itemCount > 0 && <Badge className="bg-blue-600 text-white">{itemCount}</Badge>}
                     </Link>
                   </>
                 )}

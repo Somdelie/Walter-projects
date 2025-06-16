@@ -5,19 +5,20 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, ShoppingCart } from "lucide-react"
+import { Heart, ShoppingCart, Check, Loader2 } from "lucide-react" // Added Loader2
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { toast } from "sonner"
 import { formatPrice } from "@/lib/formatPrice"
 import type { Product } from "@prisma/client"
+import { useCartSafe } from "@/contexts/cart-context"
+import { toast } from "sonner"
 
 interface ProductWithDetails extends Product {
   category: {
     id: string
     title: string
-  } | null  // Allow null for products without categories
+  } | null
   brand?: {
     id: string
     name: string
@@ -32,24 +33,21 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, viewMode, index }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const cart = useCartSafe()
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
-    setIsLoading(true)
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 800))
-      toast.success("Added to cart!", {
-        description: `${product.name} has been added to your cart.`,
-      })
-    } catch (error) {
-      toast.error("Failed to add to cart")
-    } finally {
-      setIsLoading(false)
+    if (isOutOfStock || isInCart) return
+
+    if (!cart) {
+      toast.error("Cart not available. Please refresh the page.")
+      return
     }
+
+    await cart.addItem(product.id, 1)
   }
 
   const handleToggleWishlist = async (e: React.MouseEvent) => {
@@ -57,11 +55,7 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
     e.stopPropagation()
 
     setIsWishlisted(!isWishlisted)
-    toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist!", {
-      description: isWishlisted
-        ? `${product.name} has been removed from your wishlist.`
-        : `${product.name} has been added to your wishlist.`,
-    })
+    // TODO: Implement wishlist API calls
   }
 
   const discountPercentage =
@@ -70,6 +64,8 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
       : 0
 
   const isOutOfStock = product.stockQuantity === 0
+  const isInCart = cart ? cart.isItemInCart(product.id) : false
+  const isItemLoading = cart ? cart.isItemLoading(product.id) : false
 
   if (viewMode === "list") {
     return (
@@ -161,15 +157,20 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
 
                     <Button
                       onClick={handleAddToCart}
-                      disabled={isLoading || isOutOfStock}
-                      className="w-full bg-red-500 hover:bg-red-600 text-white font-medium"
+                      disabled={isItemLoading || isOutOfStock || isInCart}
+                      className={`w-full font-medium ${
+                        isInCart 
+                          ? "bg-green-500 hover:bg-green-600 text-white" 
+                          : "bg-red-500 hover:bg-red-600 text-white"
+                      }`}
                     >
-                      {isLoading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                          className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
-                        />
+                      {isItemLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : isInCart ? (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          In Cart
+                        </>
                       ) : (
                         <>
                           <ShoppingCart className="h-4 w-4 mr-2" />
@@ -187,7 +188,7 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
     )
   }
 
-  // Grid View - Clean Minimalist Design
+  // Grid View
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -222,11 +223,13 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
 
             {/* Product Name */}
             <div className="px-4 pb-3">
-              <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 leading-tight truncate">{product.name}</h3>
+              <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 leading-tight truncate">
+                {product.name}
+              </h3>
             </div>
 
             {/* Image Container */}
-            <div className="relative flex-1 mb-4 overflow-hidden rounded w-full h-48 ">
+            <div className="relative flex-1 mb-4 overflow-hidden rounded w-full h-48">
               <Image
                 src={
                   imageError
@@ -234,7 +237,7 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                     : product.thumbnail || "/placeholder.svg?height=200&width=300"
                 }
                 alt={product.name}
-               fill
+                fill
                 className="object-contain group-hover:scale-105 transition-transform duration-500"
                 onError={() => setImageError(true)}
               />
@@ -262,12 +265,6 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                   <span>Type:</span>
                   <span className="font-medium">{product.type.replace("_", " ")}</span>
                 </div>
-                {/* <div className="flex justify-between">
-                  <span>Stock:</span>
-                  <span className={`font-medium ${isOutOfStock ? "text-red-500" : "text-green-600"}`}>
-                    {isOutOfStock ? "Out of Stock" : `${product.stockQuantity} Available`}
-                  </span>
-                </div> */}
                 {product.brand && (
                   <div className="flex justify-between">
                     <span>Brand:</span>
@@ -287,15 +284,20 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
               {/* Add to Cart Button */}
               <Button
                 onClick={handleAddToCart}
-                disabled={isLoading || isOutOfStock}
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-medium"
+                disabled={isItemLoading || isOutOfStock || isInCart}
+                className={`w-full font-medium ${
+                  isInCart 
+                    ? "bg-green-500 hover:bg-green-600 text-white" 
+                    : "bg-red-500 hover:bg-red-600 text-white"
+                }`}
               >
-                {isLoading ? (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                    className="h-4 w-4 border-2 border-white border-t-transparent rounded-full"
-                  />
+                {isItemLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isInCart ? (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    In Cart
+                  </>
                 ) : (
                   <>
                     <ShoppingCart className="h-4 w-4 mr-2" />

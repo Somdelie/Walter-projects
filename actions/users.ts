@@ -129,6 +129,7 @@ export async function getAllUsers() {
         roles: true,
       },
     });
+    // console.log("Fetched users:", users);
     return users;
   } catch (error) {
     console.error("Error fetching the count:", error);

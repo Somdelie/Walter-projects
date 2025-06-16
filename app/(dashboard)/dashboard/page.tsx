@@ -1,33 +1,44 @@
 import { getDashboardOverview } from "@/actions/analytics";
-import { getAllSavings } from "@/actions/savings";
+import { getAllOrders } from "@/actions/orders";
+import { getAllUsers } from "@/actions/users";
 import DashboardMain from "@/components/dashboard/DashboardMain";
-import OverViewCard from "@/components/OverViewCard";
-import { DashboardWelcome } from "@/components/WelcomeBanner";
 import { getAuthenticatedUser } from "@/config/useAuth";
-import { redirect } from "next/navigation";
+import { Order } from "@/types/orders";
 
 export default async function Dashboard() {
   const analytics = (await getDashboardOverview()) || [];
   const user = await getAuthenticatedUser();
+  const users = await getAllUsers();
+  const orders = await getAllOrders();
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
+      </div>
+    );
+  }
+
+  if(!users || users.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-2xl font-bold text-gray-600">No users found</h1>
+      </div>
+    );
+  }
+  if(!orders) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <h1 className="text-2xl font-bold text-gray-600">No orders found</h1>
+      </div>
+    );
+  }
+
+  console.log(orders, 'orders in dashboard page');
+
   return (
     <main>
-      {/* <div className="space-y-6">
-        <div className="space-y-1">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            Financial Overview {new Date().getFullYear()}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Track your savings and transactions
-          </p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-          {analytics.map((item, i) => (
-            <OverViewCard item={item} key={i} />
-          ))}
-        </div>
-      </div> */}
-      <DashboardMain />
+      <DashboardMain users={users} orders={orders as any}/>
     </main>
   );
 }
