@@ -1,20 +1,30 @@
-// lib/auth.ts
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import { Role, User } from "@prisma/client";
+import type { Role } from "@prisma/client";
 import { authOptions } from "./auth";
 
 // Type for authenticated user with permissions
 export interface AuthenticatedUser {
   id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  roles: Role[];
-  permissions: string[];
   name?: string | null;
   email?: string | null;
   image?: string | null;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  jobTitle?: string | null;
+  isVerfied?: boolean; // Note: keeping the typo as it exists in your schema
+  roles: Role[];
+  permissions: string[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Extended user type for settings page with guaranteed database fields
+export interface FullAuthenticatedUser extends AuthenticatedUser {
+  isVerfied: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // Function to check authorization and return NotAuthorized component if needed
@@ -86,4 +96,59 @@ export async function checkAllPermissions(permissions: string[]) {
   }
 
   return true;
+}
+
+// Function to get full user data for settings page
+export async function getUserForSettings(): Promise<FullAuthenticatedUser | null> {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user) {
+    return null;
+  }
+
+  // Always fetch fresh data from the database for settings page
+  const { db } = await import("@/prisma/db");
+
+  const fullUser = await db.user.findUnique({
+    where: {
+      id: session.user.id,
+    },
+    select: {
+      id: true,
+      name: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      phone: true,
+      image: true,
+      jobTitle: true,
+      isVerfied: true,
+      createdAt: true,
+      updatedAt: true,
+      roles: {
+        select: {
+          id: true,
+          displayName: true,
+          roleName: true,
+          description: true,
+          permissions: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  if (!fullUser) {
+    return null;
+  }
+
+  // Combine permissions from all roles
+  const permissions = fullUser.roles.flatMap((role) => role.permissions);
+
+  return {
+    ...fullUser,
+    roles: fullUser.roles,
+    permissions,
+  } as FullAuthenticatedUser;
 }

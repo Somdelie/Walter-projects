@@ -7,7 +7,7 @@ const testimonials = [
     company: "Smith Construction",
     role: "Project Manager",
     content:
-      "AlumPro's windows exceeded our expectations. The quality is outstanding and the delivery was prompt. Our clients are extremely satisfied with the results.",
+      "WalterProjects's windows exceeded our expectations. The quality is outstanding and the delivery was prompt. Our clients are extremely satisfied with the results.",
     rating: 5,
     avatar: "/placeholder.svg?height=60&width=60",
   },
@@ -16,7 +16,7 @@ const testimonials = [
     company: "Modern Architects",
     role: "Lead Architect",
     content:
-      "We've been using AlumPro for all our commercial projects. Their custom solutions and technical support are unmatched in the industry.",
+      "We've been using WalterProjects for all our commercial projects. Their custom solutions and technical support are unmatched in the industry.",
     rating: 5,
     avatar: "/placeholder.svg?height=60&width=60",
   },
@@ -25,7 +25,7 @@ const testimonials = [
     company: "Davis Homes",
     role: "Developer",
     content:
-      "The aluminum doors from AlumPro have transformed our residential projects. Great quality, competitive pricing, and excellent customer service.",
+      "The aluminum doors from WalterProjects have transformed our residential projects. Great quality, competitive pricing, and excellent customer service.",
     rating: 5,
     avatar: "/placeholder.svg?height=60&width=60",
   },
@@ -39,7 +39,7 @@ export default function TestimonialsSection() {
         <div className="text-center mb-6">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What Our Customers Say</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Don't just take our word for it - hear from the professionals who trust AlumPro for their projects
+            Don't just take our word for it - hear from the professionals who trust WalterProjects for their projects
           </p>
         </div>
 

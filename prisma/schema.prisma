@@ -74,6 +74,7 @@ model User {
   sessions      Session[]
   savings       Saving[]
   blogs         Blog[]
+  isAdmin       Boolean        @default(false)
   isVerfied     Boolean        @default(false)
   token         String?
   createdAt     DateTime       @default(now())

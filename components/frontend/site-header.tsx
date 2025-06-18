@@ -13,6 +13,14 @@ import {
 } from "@/components/ui/navigation-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Menu,
   ShoppingCart,
   Heart,
@@ -24,6 +32,14 @@ import {
   Wrench,
   Glasses,
   DoorOpen,
+  Settings,
+  ShoppingBag,
+  MapPin,
+  LogOut,
+  Shield,
+  BarChart3,
+  Users,
+  Package2,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ChevronDown } from "lucide-react"
@@ -98,12 +114,89 @@ const companyLinks = [
   },
 ]
 
-export default function SiteHeader({ session }: { session: Session | null }) {
+interface ExtendedSession extends Session {
+  user: Session["user"] & {
+    isAdmin?: boolean
+  }
+}
+
+export default function SiteHeader({ session }: { session: ExtendedSession | null }) {
   const [open, setOpen] = React.useState(false)
   const [showProducts, setShowProducts] = React.useState(false)
   const [showCompany, setShowCompany] = React.useState(false)
   const { itemCount } = useCart()
   const { itemCount: wishlistCount } = useWishlist()
+
+  const userMenuItems = [
+    {
+      label: "My Profile",
+      href: "/profile",
+      icon: User,
+      adminOnly: false,
+    },
+    {
+      label: "My Orders",
+      href: "/orders",
+      icon: ShoppingBag,
+      adminOnly: false,
+    },
+    {
+      label: "Wishlist",
+      href: "/wishlist",
+      icon: Heart,
+      adminOnly: false,
+    },
+    {
+      label: "My Cart",
+      href: "/cart",
+      icon: ShoppingCart,
+      adminOnly: false,
+    },
+    {
+      label: "Addresses",
+      href: "/addresses",
+      icon: MapPin,
+      adminOnly: false,
+    },
+    {
+      label: "Account Settings",
+      href: "/settings",
+      icon: Settings,
+      adminOnly: false,
+    },
+  ]
+
+  const adminMenuItems = [
+    {
+      label: "Admin Dashboard",
+      href: "/admin",
+      icon: BarChart3,
+      adminOnly: true,
+    },
+    {
+      label: "Manage Users",
+      href: "/admin/users",
+      icon: Users,
+      adminOnly: true,
+    },
+    {
+      label: "Manage Products",
+      href: "/admin/products",
+      icon: Package2,
+      adminOnly: true,
+    },
+    {
+      label: "System Settings",
+      href: "/admin/settings",
+      icon: Shield,
+      adminOnly: true,
+    },
+  ]
+
+  const handleSignOut = () => {
+    // Add your sign out logic here
+    // signOut() or your auth provider's sign out method
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
@@ -258,18 +351,64 @@ export default function SiteHeader({ session }: { session: Session | null }) {
                 </Link>
               </Button>
 
-              {/* User Menu */}
-              <Button asChild variant="ghost" className="hidden md:flex">
-                <Link href="/dashboard" className="flex items-center space-x-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? ""} />
-                    <AvatarFallback className="bg-blue-100 text-blue-600">
-                      {getInitials(session?.user?.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium">Account</span>
-                </Link>
-              </Button>
+              {/* User Dropdown Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                 
+                    <Avatar className="h-8 w-8 cursor-pointer">
+                      <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? ""}>
+                        {/* {session?.user?.image ? null : getInitials(session?.user?.name?.charAt(0))} */}
+                      </AvatarImage>
+                      <AvatarFallback className="bg-primary text-white font-semibold shadow-lg">
+                        {getInitials(session?.user?.name)}
+                      </AvatarFallback>
+                    </Avatar>
+              
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{session?.user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{session?.user?.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+
+                  {/* Regular User Menu Items */}
+                  {userMenuItems.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
+                      <Link href={item.href} className="flex items-center">
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+
+                  {/* Admin Menu Items - Only show if user is admin */}
+                  {session?.user?.isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
+                        Admin Dashboard
+                      </DropdownMenuLabel>
+                      {adminMenuItems.map((item) => (
+                        <DropdownMenuItem key={item.href} asChild>
+                          <Link href={item.href} className="flex items-center">
+                            <item.icon className="mr-2 h-4 w-4" />
+                            <span>{item.label}</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </>
+                  )}
+
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <div className="hidden md:flex items-center space-x-3">
@@ -385,6 +524,42 @@ export default function SiteHeader({ session }: { session: Session | null }) {
                       Cart
                       {itemCount > 0 && <Badge className="bg-blue-600 text-white">{itemCount}</Badge>}
                     </Link>
+
+                    {/* Mobile User Menu Items */}
+                    <div className="border-t mt-2 pt-2">
+                      <div className="px-4 py-2 text-sm font-medium text-slate-600">Account</div>
+                      {userMenuItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="flex items-center px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                          onClick={() => setOpen(false)}
+                        >
+                          <item.icon className="mr-3 h-5 w-5" />
+                          {item.label}
+                        </Link>
+                      ))}
+
+                      {/* Mobile Admin Menu Items */}
+                      {session?.user?.isAdmin && (
+                        <>
+                          <div className="px-4 py-2 text-sm font-medium text-blue-600 border-t mt-2 pt-2">
+                            Admin Panel
+                          </div>
+                          {adminMenuItems.map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              className="flex items-center px-4 py-3 text-base font-medium hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                              onClick={() => setOpen(false)}
+                            >
+                              <item.icon className="mr-3 h-5 w-5" />
+                              {item.label}
+                            </Link>
+                          ))}
+                        </>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
@@ -392,12 +567,31 @@ export default function SiteHeader({ session }: { session: Session | null }) {
               {/* Mobile Auth Buttons */}
               <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-slate-50">
                 {session ? (
-                  <Button asChild className="w-full" onClick={() => setOpen(false)}>
-                    <Link href="/dashboard" className="flex items-center justify-center space-x-2">
-                      <User className="h-4 w-4" />
-                      <span>My Account</span>
-                    </Link>
-                  </Button>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? ""} />
+                        <AvatarFallback className="bg-blue-100 text-blue-600">
+                          {getInitials(session?.user?.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-sm">{session?.user?.name}</p>
+                        <p className="text-xs text-slate-600">{session?.user?.email}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setOpen(false)
+                        handleSignOut()
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  </div>
                 ) : (
                   <div className="grid gap-2">
                     <Button variant="outline" className="w-full" onClick={() => setOpen(false)} asChild>

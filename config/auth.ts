@@ -1,4 +1,4 @@
-import { AuthOptions, NextAuthOptions } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -11,8 +11,27 @@ import { db } from "@/prisma/db";
 async function getUserWithRoles(userId: string) {
   const user = await db.user.findUnique({
     where: { id: userId },
-    include: {
-      roles: true, // Include roles relation
+    select: {
+      id: true,
+      name: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      email: true,
+      image: true,
+      isVerfied: true,
+      jobTitle: true,
+      roles: {
+        select: {
+          id: true,
+          displayName: true,
+          roleName: true,
+          description: true,
+          permissions: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
     },
   });
 
@@ -55,6 +74,8 @@ export const authOptions: NextAuthOptions = {
           phone: "",
           image: profile.avatar_url,
           email: profile.email,
+          isVerfied: true, // GitHub users are considered verified
+          jobTitle: null,
           roles: defaultRole ? [defaultRole] : [],
           permissions: defaultRole ? defaultRole.permissions : [], // Include permissions from default role
         };
@@ -77,6 +98,8 @@ export const authOptions: NextAuthOptions = {
           phone: "",
           image: profile.picture,
           email: profile.email,
+          isVerfied: profile.email_verified || false,
+          jobTitle: null,
           roles: defaultRole ? [defaultRole] : [],
           permissions: defaultRole ? defaultRole.permissions : [], // Include permissions from default role
         };
@@ -107,7 +130,7 @@ export const authOptions: NextAuthOptions = {
             throw { error: "No user found", status: 401 };
           }
 
-          let passwordMatch: boolean = false;
+          let passwordMatch = false;
           if (existingUser && existingUser.password) {
             passwordMatch = await compare(
               credentials.password,
@@ -135,6 +158,8 @@ export const authOptions: NextAuthOptions = {
             phone: existingUser.phone,
             image: existingUser.image,
             email: existingUser.email,
+            isVerfied: existingUser.isVerfied,
+            jobTitle: existingUser.jobTitle,
             roles: existingUser.roles,
             permissions: uniquePermissions,
           };
@@ -178,7 +203,7 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
-        // For initial sign in
+        // For initial sign in - user object has all our custom properties
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
@@ -186,29 +211,40 @@ export const authOptions: NextAuthOptions = {
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.phone = user.phone;
+        token.isVerfied = user.isVerfied;
+        token.jobTitle = user.jobTitle;
         token.roles = user.roles;
         token.permissions = user.permissions;
       } else {
         // For subsequent requests, refresh roles and permissions
-        const userData = await getUserWithRoles(token.id);
+        const userData = await getUserWithRoles(token.id as string);
         if (userData) {
           token.roles = userData.roles;
           token.permissions = userData.permissions;
+          token.isVerfied = userData.isVerfied;
+          token.jobTitle = userData.jobTitle;
+          token.firstName = userData.firstName;
+          token.lastName = userData.lastName;
+          token.phone = userData.phone;
+          token.name = userData.name;
+          token.email = userData.email;
+          token.picture = userData.image;
         }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token) {
-        session.user.id = token.id;
+        session.user.id = token.id as string;
         session.user.name = token.name;
         session.user.email = token.email;
         session.user.image = token.picture;
-        session.user.firstName = token.firstName;
-        session.user.lastName = token.lastName;
-        session.user.phone = token.phone;
-        session.user.roles = token.roles;
-        session.user.permissions = token.permissions;
+        session.user.firstName = token.firstName as string;
+        session.user.lastName = token.lastName as string;
+        session.user.phone = token.phone as string;
+        session.user.isVerfied = token.isVerfied as boolean;
+        session.user.roles = token.roles as any[];
+        session.user.permissions = token.permissions as string[];
       }
       return session;
     },

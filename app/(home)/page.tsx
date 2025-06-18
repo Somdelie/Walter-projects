@@ -10,17 +10,6 @@ import StatsSection from "@/components/frontend/home/StatsSection"
 import TestimonialsSection from "@/components/frontend/home/TestimonialsSection"
 import CTASection from "@/components/frontend/home/CTASection"
 
-export const metadata: Metadata = {
-  title: "AlumPro - Premium Aluminum Windows, Doors & Profiles | Professional Solutions",
-  description:
-    "Leading supplier of high-quality aluminum windows, doors, profiles, and accessories. Professional-grade products for residential and commercial projects with fast delivery and expert support.",
-  keywords: "aluminum windows, aluminum doors, profiles, hardware, glass, commercial aluminum, residential aluminum",
-  openGraph: {
-    title: "AlumPro - Premium Aluminum Solutions",
-    description: "Professional aluminum windows, doors, and profiles for your projects",
-    type: "website",
-  },
-}
 
 export default async function HomePage() {
   // Fetch data server-side

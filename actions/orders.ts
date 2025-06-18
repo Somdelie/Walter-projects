@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/prisma/db";
 import { OrderUpdateData } from "@/types/orders";
+import { getAuthenticatedUser } from "@/config/useAuth";
 
 export async function getAllOrders() {
   try {
@@ -65,6 +66,94 @@ export async function getAllOrders() {
     };
   } catch (error) {
     console.error("Error fetching orders:", error);
+    return {
+      data: [],
+      error: "Failed to fetch orders",
+    };
+  }
+}
+
+export async function getUserOrders() {
+  try {
+    const user = await getAuthenticatedUser();
+
+    if (!user?.id) {
+      return {
+        data: [],
+        error: "Unauthorized",
+      };
+    }
+
+    const ordersFromDb = await db.order.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                thumbnail: true,
+                slug: true,
+              },
+            },
+            variant: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        shippingAddress: {
+          select: {
+            streetLine1: true,
+            streetLine2: true,
+            city: true,
+            state: true,
+            postalCode: true,
+            country: true,
+          },
+        },
+        payments: {
+          select: {
+            id: true,
+            amount: true,
+            method: true,
+            status: true,
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: [{ createdAt: "desc" }],
+    });
+
+    const orders = ordersFromDb.map((order) => ({
+      ...order,
+      subtotal: Number(order.subtotal),
+      taxAmount: Number(order.taxAmount),
+      deliveryFee: Number(order.deliveryFee),
+      discount: Number(order.discount),
+      total: Number(order.total),
+      items: order.items.map((item) => ({
+        ...item,
+        unitPrice: Number(item.unitPrice),
+        totalPrice: Number(item.totalPrice),
+      })),
+      payments: order.payments.map((payment) => ({
+        ...payment,
+        amount: Number(payment.amount),
+      })),
+    }));
+
+    return {
+      data: orders,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Error fetching user orders:", error);
     return {
       data: [],
       error: "Failed to fetch orders",
