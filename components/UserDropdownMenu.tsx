@@ -37,7 +37,7 @@ export function UserDropdownMenu({
   async function handleLogout() {
     try {
       await signOut();
-      router.push("/login");
+      router.push("/");
     } catch (error) {
       console.log(error);
     }

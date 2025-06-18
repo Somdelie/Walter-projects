@@ -49,6 +49,8 @@ import { getInitials } from "@/lib/generateInitials"
 import type { Session } from "next-auth"
 import { useCart } from "@/contexts/cart-context"
 import { useWishlist } from "@/contexts/wishlist-context"
+import { signOut } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 const productCategories = [
   {
@@ -114,18 +116,24 @@ const companyLinks = [
   },
 ]
 
-interface ExtendedSession extends Session {
-  user: Session["user"] & {
-    isAdmin?: boolean
-  }
+type User = {
+  id: string
+  name?: string | null
+  email?: string | null
+  image?: string | null
+  isAdmin?: boolean
 }
 
-export default function SiteHeader({ session }: { session: ExtendedSession | null }) {
+
+
+export default function SiteHeader({ user }: { user: User }) {
   const [open, setOpen] = React.useState(false)
   const [showProducts, setShowProducts] = React.useState(false)
   const [showCompany, setShowCompany] = React.useState(false)
   const { itemCount } = useCart()
   const { itemCount: wishlistCount } = useWishlist()
+
+  const router = useRouter()
 
   const userMenuItems = [
     {
@@ -193,10 +201,15 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
     },
   ]
 
-  const handleSignOut = () => {
-    // Add your sign out logic here
-    // signOut() or your auth provider's sign out method
-  }
+
+   async function handleLogout() {
+      try {
+        await signOut();
+        router.push("/");
+      } catch (error) {
+        console.log(error);
+      }
+    }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
@@ -325,7 +338,7 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
             </Link>
           </Button>
 
-          {session ? (
+          {user ? (
             <>
               {/* Wishlist */}
               <Button variant="ghost" size="icon" className="relative" asChild>
@@ -356,11 +369,11 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
                 <DropdownMenuTrigger asChild>
                  
                     <Avatar className="h-8 w-8 cursor-pointer">
-                      <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? ""}>
-                        {/* {session?.user?.image ? null : getInitials(session?.user?.name?.charAt(0))} */}
+                      <AvatarImage src={user?.image ?? ""} alt={user?.name ?? ""}>
+                        {/* {user?.image ? null : getInitials(user?.name?.charAt(0))} */}
                       </AvatarImage>
                       <AvatarFallback className="bg-primary text-white font-semibold shadow-lg">
-                        {getInitials(session?.user?.name)}
+                        {getInitials(user?.name)}
                       </AvatarFallback>
                     </Avatar>
               
@@ -368,8 +381,8 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{session?.user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{session?.user?.email}</p>
+                      <p className="text-sm font-medium leading-none">{user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -385,7 +398,7 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
                   ))}
 
                   {/* Admin Menu Items - Only show if user is admin */}
-                  {session?.user?.isAdmin && (
+                  {user?.isAdmin && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
@@ -403,7 +416,7 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
                   )}
 
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Sign out</span>
                   </DropdownMenuItem>
@@ -506,7 +519,7 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
                   Contact
                 </Link>
 
-                {session && (
+                {user && (
                   <>
                     <Link
                       href="/wishlist"
@@ -541,7 +554,7 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
                       ))}
 
                       {/* Mobile Admin Menu Items */}
-                      {session?.user?.isAdmin && (
+                      {user?.isAdmin && (
                         <>
                           <div className="px-4 py-2 text-sm font-medium text-blue-600 border-t mt-2 pt-2">
                             Admin Panel
@@ -566,18 +579,18 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
 
               {/* Mobile Auth Buttons */}
               <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-slate-50">
-                {session ? (
+                {user ? (
                   <div className="space-y-2">
                     <div className="flex items-center space-x-3 mb-3">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={session?.user?.image ?? ""} alt={session?.user?.name ?? ""} />
+                        <AvatarImage src={user?.image ?? ""} alt={user?.name ?? ""} />
                         <AvatarFallback className="bg-blue-100 text-blue-600">
-                          {getInitials(session?.user?.name)}
+                          {getInitials(user?.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium text-sm">{session?.user?.name}</p>
-                        <p className="text-xs text-slate-600">{session?.user?.email}</p>
+                        <p className="font-medium text-sm">{user?.name}</p>
+                        <p className="text-xs text-slate-600">{user?.email}</p>
                       </div>
                     </div>
                     <Button
@@ -585,11 +598,11 @@ export default function SiteHeader({ session }: { session: ExtendedSession | nul
                       className="w-full"
                       onClick={() => {
                         setOpen(false)
-                        handleSignOut()
+                        handleLogout()
                       }}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
+                      Log Out
                     </Button>
                   </div>
                 ) : (

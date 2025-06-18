@@ -31,7 +31,8 @@ export interface FullAuthenticatedUser extends AuthenticatedUser {
 export async function checkPermission(requiredPermission: string) {
   const session = await getServerSession(authOptions);
 
-  if (!session) {
+  if (!session || !session.user) {
+    // Redirect to login page if not authenticated
     redirect("/login");
   }
 

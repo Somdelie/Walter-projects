@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner"
 import { Loader2, AlertTriangle, Trash2 } from "lucide-react"
 import { deleteAccount } from "@/actions/user-settings"
+import { signOut } from "next-auth/react"
 
 export function DangerZone() {
   const [isLoading, setIsLoading] = useState(false)
@@ -40,8 +41,7 @@ export function DangerZone() {
 
       if (result.success) {
         toast.success(result.message || "Account deleted successfully")
-        // Redirect to home or login page
-        window.location.href = "/"
+     setTimeout(() => signOut({ callbackUrl: "/" }), 1500); // Delay for toast
       } else {
         toast.error(result.error || "Failed to delete account")
       }

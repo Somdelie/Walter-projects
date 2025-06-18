@@ -1,40 +1,54 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
-import { Loader2, Save, User } from "lucide-react"
-import { updatePersonalInfo } from "@/actions/user-settings"
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { Loader2, Save, User, Mail, Shield, AlertTriangle } from "lucide-react";
+import { updatePersonalInfo } from "@/actions/user-settings";
+// import { updatePersonalInfo } from "@/actions/user-settings";
 
 interface PersonalInfoFormProps {
   user: {
-    firstName: string
-    lastName: string
-    phone: string | null
-  }
+    firstName: string;
+    lastName: string;
+    phone: string | null;
+    jobTitle?: string | null;
+  };
+}
+
+interface EmailFormProps {
+  user: {
+    email: string | null;
+    isVerfied: boolean;
+  };
 }
 
 export function PersonalInfoForm({ user }: PersonalInfoFormProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  
 
-  async function handleSubmit(formData: FormData) {
-    setIsLoading(true)
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsLoading(true);
 
     try {
-      const result = await updatePersonalInfo(formData)
+      const formData = new FormData(event.currentTarget);
+      const result = await updatePersonalInfo(formData);
 
       if (result.success) {
-        toast.success("Personal information updated successfully")
+        toast.success(result.message || "Personal information updated successfully");
       } else {
-        toast.error(result.error || "Failed to update personal information")
+        toast.error(result.error || "Failed to update personal information");
       }
     } catch (error) {
-      toast.error("An unexpected error occurred")
+      console.error("Error updating personal info:", error);
+      toast.error("An unexpected error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -48,7 +62,7 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps) {
         <CardDescription>Update your personal details and contact information</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name *</Label>
@@ -57,6 +71,7 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps) {
                 name="firstName"
                 defaultValue={user.firstName}
                 required
+                disabled={isLoading}
                 className="transition-all duration-200 focus:scale-[1.02]"
               />
             </div>
@@ -67,6 +82,7 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps) {
                 name="lastName"
                 defaultValue={user.lastName}
                 required
+                disabled={isLoading}
                 className="transition-all duration-200 focus:scale-[1.02]"
               />
             </div>
@@ -79,6 +95,7 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps) {
               name="phone"
               type="tel"
               defaultValue={user.phone || ""}
+              disabled={isLoading}
               className="transition-all duration-200 focus:scale-[1.02]"
             />
           </div>
@@ -94,5 +111,5 @@ export function PersonalInfoForm({ user }: PersonalInfoFormProps) {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

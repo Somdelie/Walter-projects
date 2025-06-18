@@ -24,7 +24,7 @@ export default function LoginForm() {
     reset,
   } = useForm<LoginProps>()
   const params = useSearchParams()
-  const returnUrl = params.get("returnUrl") || "/dashboard"
+  const returnUrl = params.get("returnUrl") || "/"
   const [passErr, setPassErr] = useState("")
   const router = useRouter()
 

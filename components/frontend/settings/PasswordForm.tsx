@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -17,17 +19,18 @@ export function PasswordForm() {
     confirm: false,
   })
 
-  async function handleSubmit(formData: FormData) {
+  const onClientSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setIsLoading(true)
 
     try {
+      const formData = new FormData(event.currentTarget)
       const result = await updatePassword(formData)
 
       if (result.success) {
         toast.success(result.message || "Password updated successfully")
         // Reset form
-        const form = document.getElementById("password-form") as HTMLFormElement
-        form?.reset()
+        event.currentTarget.reset()
       } else {
         toast.error(result.error || "Failed to update password")
       }
@@ -55,7 +58,7 @@ export function PasswordForm() {
         <CardDescription>Update your password to keep your account secure</CardDescription>
       </CardHeader>
       <CardContent>
-        <form id="password-form" action={handleSubmit} className="space-y-4">
+        <form onSubmit={onClientSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="currentPassword">Current Password *</Label>
             <div className="relative">

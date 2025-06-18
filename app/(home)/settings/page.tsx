@@ -10,9 +10,12 @@ import { ProfileImageForm } from "@/components/frontend/settings/ProfileImageFor
 import { DangerZone } from "@/components/frontend/settings/DangerZone"
 import { SettingsLoading } from "@/components/frontend/settings/SettingsLoading"
 import { formatDate } from "date-fns"
+import { getUserByEmail } from "@/actions/user-settings"
 
 async function SettingsContent() {
-  const user = await getAuthenticatedUser()
+  // const user = await getAuthenticatedUser()
+
+  const user = await getUserByEmail()
 
   if (!user) {
     return (

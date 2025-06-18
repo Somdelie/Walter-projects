@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { Loader2, Mail, Shield, AlertTriangle } from "lucide-react"
 import { updateEmail } from "@/actions/user-settings"
+import { signOut } from "next-auth/react"
 
 interface EmailFormProps {
   user: {
@@ -20,14 +23,17 @@ interface EmailFormProps {
 export function EmailForm({ user }: EmailFormProps) {
   const [isLoading, setIsLoading] = useState(false)
 
-  async function handleSubmit(formData: FormData) {
+  const onClientSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setIsLoading(true)
 
     try {
+      const formData = new FormData(event.currentTarget)
       const result = await updateEmail(formData)
 
       if (result.success) {
-        toast.success(result.message || "Email updated successfully")
+        toast.success(result.message || "Email updated successfully, You will be signed out for security.")
+        setTimeout(() => signOut({ callbackUrl: "/" }), 1500) // Delay for toast
       } else {
         toast.error(result.error || "Failed to update email")
       }
@@ -60,7 +66,7 @@ export function EmailForm({ user }: EmailFormProps) {
             {!user.isVerfied && <p className="text-sm text-muted-foreground">Please verify your email address</p>}
           </div>
 
-          <form action={handleSubmit} className="space-y-4">
+          <form onSubmit={onClientSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email Address *</Label>
               <Input

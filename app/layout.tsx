@@ -37,17 +37,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
 
-  const user = await getAuthenticatedUser();
+
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
        <Providers>
-          <CartProvider user={user}>
-            <WishlistProvider user={user}>
+         
               {children}
-            </WishlistProvider>
-          </CartProvider>
+          
         </Providers>
       </body>
     </html>

@@ -12,7 +12,7 @@ export default async function DashboardLayout({
 }) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    redirect("/login");
+    throw new Error("User not authenticated");
   }
   return (
     <div className="min-h-screen w-full">
