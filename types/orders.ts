@@ -72,9 +72,11 @@ export interface Order {
   items: OrderItem[];
   shippingAddress: {
     streetLine1: string;
+    streetLine2?: string | null; // 👈 optional
     city: string;
     state: string;
     postalCode: string;
+    country?: string | null; // 👈 optional
   } | null;
   user: {
     name: string;

@@ -89,6 +89,14 @@ export async function getUserOrders() {
         userId: user.id,
       },
       include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
         items: {
           include: {
             product: {
