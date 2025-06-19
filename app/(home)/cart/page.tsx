@@ -145,7 +145,9 @@ export default function CartPage() {
                               >
                                 <Minus className="w-3 h-3" />
                               </Button>
-                              <span className="w-12 text-center justify-center text-green-600 font-medium">{isUpdating ? <Loader2 size={20} className="animate-spin"/> : item.quantity}</span>
+                              <span className="w-12 text-center justify-center text-green-600 font-medium">
+                                {isUpdating ? <Loader2 size={20} className="animate-spin" /> : item.quantity}
+                              </span>
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -214,8 +216,8 @@ export default function CartPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Button className="w-full bg-primary hover:bg-orange-700" size="lg">
-                    Proceed to Checkout
+                  <Button className="w-full bg-primary hover:bg-orange-700" size="lg" asChild>
+                    <Link href="/checkout">Proceed to Checkout</Link>
                   </Button>
                   <Button variant="outline" className="w-full" asChild>
                     <Link href="/products">Continue Shopping</Link>

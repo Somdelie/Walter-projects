@@ -3,6 +3,144 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/prisma/db";
 import { OrderUpdateData } from "@/types/orders";
 import { getAuthenticatedUser } from "@/config/useAuth";
+interface CreateOrderData {
+  // Address info
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  company?: string;
+  streetLine1: string;
+  streetLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+
+  // Order details
+  deliveryMethod: "DELIVERY" | "COLLECTION";
+  paymentMethod:
+    | "CASH_ON_DELIVERY"
+    | "CASH_ON_COLLECTION"
+    | "CARD_ONLINE"
+    | "EFT"
+    | "BANK_TRANSFER";
+  notes?: string;
+  saveAddress: boolean;
+
+  // Items and pricing
+  items: Array<{
+    productId: string;
+    variantId?: string;
+    quantity: number;
+    unitPrice: number;
+  }>;
+  subtotal: number;
+  total: number;
+}
+
+export async function createOrder(data: CreateOrderData) {
+  try {
+    const user = await getAuthenticatedUser();
+
+    if (!user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Validate required fields
+    if (
+      !data.firstName ||
+      !data.lastName ||
+      !data.streetLine1 ||
+      !data.city ||
+      !data.state ||
+      !data.postalCode
+    ) {
+      return { success: false, error: "Missing required address fields" };
+    }
+
+    // Generate order number
+    const orderCount = await db.order.count();
+    const orderNumber = `ORD-${String(orderCount + 1).padStart(6, "0")}`;
+
+    // Calculate fees
+    const deliveryFee = data.deliveryMethod === "DELIVERY" ? 150 : 0;
+    const taxAmount = 0; // Assuming tax is included
+    const discount = 0;
+
+    // Create shipping address with proper validation
+    const shippingAddress = await db.address.create({
+      data: {
+        userId: user.id,
+        type: "shipping",
+        firstName: data.firstName,
+        lastName: data.lastName,
+        company: data.company || null,
+        streetLine1: data.streetLine1,
+        streetLine2: data.streetLine2 || null,
+        city: data.city,
+        state: data.state,
+        postalCode: data.postalCode,
+        country: data.country || "South Africa",
+        phone: data.phone,
+        isDefault: data.saveAddress || false,
+      },
+    });
+
+    // Create order
+    const order = await db.order.create({
+      data: {
+        orderNumber,
+        userId: user.id,
+        status: "PENDING",
+        paymentMethod: data.paymentMethod,
+        paymentStatus: "PENDING",
+        deliveryMethod: data.deliveryMethod,
+        subtotal: data.subtotal,
+        taxAmount,
+        deliveryFee,
+        discount,
+        total: data.total,
+        shippingAddressId: shippingAddress.id,
+        notes: data.notes,
+        items: {
+          create: data.items.map((item) => ({
+            productId: item.productId,
+            variantId: item.variantId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.unitPrice * item.quantity,
+          })),
+        },
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+            variant: true,
+          },
+        },
+        shippingAddress: true,
+      },
+    });
+
+    // Clear user's cart
+    await db.cartItem.deleteMany({
+      where: { userId: user.id },
+    });
+
+    revalidatePath("/orders");
+    revalidatePath("/cart");
+
+    return { success: true, data: order };
+  } catch (error) {
+    console.error("Create order error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create order",
+    };
+  }
+}
 
 export async function getAllOrders() {
   try {

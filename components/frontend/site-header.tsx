@@ -133,6 +133,8 @@ export default function SiteHeader({ user }: { user: User }) {
   const { itemCount } = useCart()
   const { itemCount: wishlistCount } = useWishlist()
 
+  console.log("user in header", user)
+
   const router = useRouter()
 
   const userMenuItems = [
@@ -177,28 +179,11 @@ export default function SiteHeader({ user }: { user: User }) {
   const adminMenuItems = [
     {
       label: "Admin Dashboard",
-      href: "/admin",
+      href: "/dashboard",
       icon: BarChart3,
       adminOnly: true,
     },
-    {
-      label: "Manage Users",
-      href: "/admin/users",
-      icon: Users,
-      adminOnly: true,
-    },
-    {
-      label: "Manage Products",
-      href: "/admin/products",
-      icon: Package2,
-      adminOnly: true,
-    },
-    {
-      label: "System Settings",
-      href: "/admin/settings",
-      icon: Shield,
-      adminOnly: true,
-    },
+
   ]
 
 
@@ -223,7 +208,7 @@ export default function SiteHeader({ user }: { user: User }) {
             <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-slate-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">WP</span>
             </div>
-            <span className="text-primary">Walter Projects</span>
+            <span className="text-primary text-sm">Walter Projects</span>
           </Link>
 
           {/* Desktop Navigation */}

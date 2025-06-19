@@ -11,8 +11,10 @@ export default async function DashboardLayout({
   children: ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  if (!session) {
-    throw new Error("User not authenticated");
+  // if session is null or session but isAdmin is false, redirect to not found page
+  if (!session || (session && !session.user?.isAdmin)) {
+    // show unauthorized component
+    redirect("/not-found");
   }
   return (
     <div className="min-h-screen w-full">

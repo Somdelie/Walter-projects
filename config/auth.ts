@@ -6,6 +6,7 @@ import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { db } from "@/prisma/db";
+import { Role } from "@prisma/client";
 
 // Helper function to get user with roles and permissions
 async function getUserWithRoles(userId: string) {
@@ -20,6 +21,7 @@ async function getUserWithRoles(userId: string) {
       email: true,
       image: true,
       isVerfied: true,
+      isAdmin: true,
       jobTitle: true,
       roles: {
         select: {
@@ -75,6 +77,7 @@ export const authOptions: NextAuthOptions = {
           image: profile.avatar_url,
           email: profile.email,
           isVerfied: true, // GitHub users are considered verified
+          isAdmin: false,
           jobTitle: null,
           roles: defaultRole ? [defaultRole] : [],
           permissions: defaultRole ? defaultRole.permissions : [], // Include permissions from default role
@@ -99,6 +102,7 @@ export const authOptions: NextAuthOptions = {
           image: profile.picture,
           email: profile.email,
           isVerfied: profile.email_verified || false,
+          isAdmin: false,
           jobTitle: null,
           roles: defaultRole ? [defaultRole] : [],
           permissions: defaultRole ? defaultRole.permissions : [], // Include permissions from default role
@@ -162,6 +166,7 @@ export const authOptions: NextAuthOptions = {
             jobTitle: existingUser.jobTitle,
             roles: existingUser.roles,
             permissions: uniquePermissions,
+            isAdmin: existingUser.isAdmin,
           };
         } catch (error) {
           throw { error: "Something went wrong", status: 401 };
@@ -215,6 +220,7 @@ export const authOptions: NextAuthOptions = {
         token.jobTitle = user.jobTitle;
         token.roles = user.roles;
         token.permissions = user.permissions;
+        token.isAdmin = user.isAdmin;
       } else {
         // For subsequent requests, refresh roles and permissions
         const userData = await getUserWithRoles(token.id as string);
@@ -222,6 +228,7 @@ export const authOptions: NextAuthOptions = {
           token.roles = userData.roles;
           token.permissions = userData.permissions;
           token.isVerfied = userData.isVerfied;
+          token.isAdmin = userData.isAdmin;
           token.jobTitle = userData.jobTitle;
           token.firstName = userData.firstName;
           token.lastName = userData.lastName;
@@ -229,22 +236,21 @@ export const authOptions: NextAuthOptions = {
           token.name = userData.name;
           token.email = userData.email;
           token.picture = userData.image;
+          token.isAdmin = userData.isAdmin;
         }
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user && token) {
+      if (session.user) {
         session.user.id = token.id as string;
-        session.user.name = token.name;
-        session.user.email = token.email;
-        session.user.image = token.picture;
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
         session.user.phone = token.phone as string;
-        session.user.isVerfied = token.isVerfied as boolean;
-        session.user.roles = token.roles as any[];
+        session.user.roles = token.roles as Role[];
         session.user.permissions = token.permissions as string[];
+        session.user.isAdmin = token.isAdmin as boolean;
+        session.user.isVerfied = token.isVerfied as boolean;
       }
       return session;
     },

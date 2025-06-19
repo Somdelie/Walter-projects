@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { PasswordProps } from "@/components/Forms/ChangePasswordForm";
 import { Resend } from "resend";
 import { generateToken } from "@/lib/token";
+import { getAuthenticatedUser } from "@/config/useAuth";
 // import { generateNumericToken } from "@/lib/token";
 const resend = new Resend(process.env.RESEND_API_KEY);
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -290,4 +291,35 @@ export async function resetUserPassword(
   } catch (error) {
     console.log(error);
   }
+}
+
+export async function getAdminUser() {
+  try {
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return {
+        error: "User not authenticated",
+        status: 401,
+        data: null,
+      };
+    }
+    const adminUser = await db.user.findMany({
+      where: {
+        email: user.email ?? "",
+        isAdmin: true,
+      },
+    });
+    if (adminUser.length === 0) {
+      return {
+        error: "User is not an admin",
+        status: 403,
+        data: null,
+      };
+    }
+    return {
+      error: null,
+      status: 200,
+      data: adminUser[0],
+    };
+  } catch (error) {}
 }

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils"
 import type { Order } from "@/types/orders"
 import { OrderStatusBadge } from "./OrderStatusBadge"
 import { Separator } from "@/components/ui/separator"
+import { formatPrice } from "@/lib/formatPrice"
 
 interface OrderCardProps {
   order: Order
@@ -31,12 +32,6 @@ export function OrderCard({ order, index }: OrderCardProps) {
     }).format(new Date(date))
   }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount)
-  }
 
   const getPaymentMethodLabel = (method: string) => {
     switch (method) {
@@ -81,7 +76,7 @@ export function OrderCard({ order, index }: OrderCardProps) {
             <p className="text-sm text-muted-foreground">Ordered on {formatDate(order.createdAt)}</p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-primary">{formatCurrency(order.total)}</p>
+            <p className="text-2xl font-bold text-primary">{formatPrice(order.total)}</p>
             <p className="text-sm text-muted-foreground">
               {order.items.length} item{order.items.length !== 1 ? "s" : ""}
             </p>
@@ -188,11 +183,11 @@ export function OrderCard({ order, index }: OrderCardProps) {
                     <p className="font-medium">{item.product.name}</p>
                     {item.variant && <p className="text-sm text-muted-foreground">Variant: {item.variant.name}</p>}
                     <p className="text-sm text-muted-foreground">
-                      {formatCurrency(item.unitPrice)} × {item.quantity}
+                      {formatPrice(item.unitPrice)} × {item.quantity}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">{formatCurrency(item.totalPrice)}</p>
+                    <p className="font-medium">{formatPrice(item.totalPrice)}</p>
                   </div>
                 </div>
               ))}
@@ -222,26 +217,26 @@ export function OrderCard({ order, index }: OrderCardProps) {
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>{formatCurrency(order.subtotal)}</span>
+                  <span>{formatPrice(order.subtotal)}</span>
                 </div>
                 {order.discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount</span>
-                    <span>-{formatCurrency(order.discount)}</span>
+                    <span>-{formatPrice(order.discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span>Tax</span>
-                  <span>{formatCurrency(order.taxAmount)}</span>
+                  <span>{formatPrice(order.taxAmount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Delivery</span>
-                  <span>{formatCurrency(order.deliveryFee)}</span>
+                  <span>{formatPrice(order.deliveryFee)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-medium">
                   <span>Total</span>
-                  <span>{formatCurrency(order.total)}</span>
+                  <span>{formatPrice(order.total)}</span>
                 </div>
               </div>
             </div>

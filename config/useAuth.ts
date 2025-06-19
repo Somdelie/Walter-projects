@@ -14,6 +14,7 @@ export interface AuthenticatedUser {
   phone: string;
   jobTitle?: string | null;
   isVerfied?: boolean; // Note: keeping the typo as it exists in your schema
+  isAdmin: boolean;
   roles: Role[];
   permissions: string[];
   createdAt?: Date;
@@ -124,6 +125,7 @@ export async function getUserForSettings(): Promise<FullAuthenticatedUser | null
       image: true,
       jobTitle: true,
       isVerfied: true,
+      isAdmin: true,
       createdAt: true,
       updatedAt: true,
       roles: {

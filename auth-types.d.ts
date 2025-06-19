@@ -22,6 +22,7 @@ declare module "next-auth" {
       phone: string;
       jobTitle?: string | null;
       isVerfied: boolean;
+      isAdmin: boolean;
       roles: Role[];
       permissions: string[];
     } & DefaultSession["user"];
@@ -46,6 +47,7 @@ declare module "next-auth/jwt" {
     phone: string;
     jobTitle?: string | null;
     isVerfied: boolean;
+    isAdmin: boolean;
     roles: Role[];
     permissions: string[];
   }

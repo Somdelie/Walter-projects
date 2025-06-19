@@ -16,6 +16,7 @@ export default async function HomeLayout({
   // const session = await getServerSession(authOptions);
 
   const user = await getAuthenticatedUser();
+  console.log("User in HomeLayout:", user);
   return (
     <div className="bg-white">
        <CartProvider user={user}>
