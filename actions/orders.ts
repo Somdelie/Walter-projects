@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/prisma/db";
 import { OrderUpdateData } from "@/types/orders";
 import { getAuthenticatedUser } from "@/config/useAuth";
+import { cache } from "react";
 interface CreateOrderData {
   // Address info
   firstName: string;
@@ -307,39 +308,93 @@ export async function getUserOrders() {
   }
 }
 
-export async function getOrderById(id: string) {
+// export async function getOrderById(id: string) {
+//   try {
+//     const order = await db.order.findUnique({
+//       where: { id },
+//       include: {
+//         user: {
+//           select: {
+//             id: true,
+//             name: true,
+//             email: true,
+//             firstName: true,
+//             lastName: true,
+//           },
+//         },
+//         items: {
+//           include: {
+//             product: {
+//               select: {
+//                 id: true,
+//                 name: true,
+//                 thumbnail: true,
+//               },
+//             },
+//             variant: {
+//               select: {
+//                 id: true,
+//                 name: true,
+//               },
+//             },
+//           },
+//         },
+//         shippingAddress: true,
+//         payments: true,
+//       },
+//     });
+
+//     if (!order) {
+//       return null;
+//     }
+
+//     return {
+//       ...order,
+//       subtotal: Number(order.subtotal),
+//       taxAmount: Number(order.taxAmount),
+//       deliveryFee: Number(order.deliveryFee),
+//       discount: Number(order.discount),
+//       total: Number(order.total),
+//       items: order.items.map((item) => ({
+//         ...item,
+//         unitPrice: Number(item.unitPrice),
+//         totalPrice: Number(item.totalPrice),
+//       })),
+//     };
+//   } catch (error) {
+//     console.error("Error fetching order:", error);
+//     return null;
+//   }
+// }
+
+// Cache the order fetch for better performance
+export const getOrderById = cache(async (orderId: string) => {
   try {
     const order = await db.order.findUnique({
-      where: { id },
+      where: { id: orderId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
         items: {
           include: {
             product: {
               select: {
-                id: true,
                 name: true,
                 thumbnail: true,
+                sku: true,
               },
             },
             variant: {
               select: {
-                id: true,
                 name: true,
               },
             },
           },
         },
         shippingAddress: true,
-        payments: true,
+        payments: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
 
@@ -347,24 +402,52 @@ export async function getOrderById(id: string) {
       return null;
     }
 
+    // Transform the data to match our interface
     return {
       ...order,
-      subtotal: Number(order.subtotal),
-      taxAmount: Number(order.taxAmount),
-      deliveryFee: Number(order.deliveryFee),
-      discount: Number(order.discount),
-      total: Number(order.total),
-      items: order.items.map((item) => ({
-        ...item,
-        unitPrice: Number(item.unitPrice),
-        totalPrice: Number(item.totalPrice),
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString(),
+      estimatedDelivery: order.estimatedDelivery?.toISOString() || null,
+      actualDelivery: order.actualDelivery?.toISOString() || null,
+      payments: order.payments?.map((payment) => ({
+        ...payment,
+        createdAt: payment.createdAt.toISOString(),
+        updatedAt: payment.updatedAt.toISOString(),
       })),
     };
   } catch (error) {
     console.error("Error fetching order:", error);
     return null;
   }
-}
+});
+
+// Cache the users map for better performance
+export const getUsersMap = cache(async () => {
+  try {
+    const users = await db.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        image: true,
+      },
+    });
+
+    // Convert to map for easy lookup
+    const userMap: Record<string, any> = {};
+    users.forEach((user) => {
+      userMap[user.id] = user;
+    });
+
+    return userMap;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return {};
+  }
+});
 
 export async function updateOrder(id: string, data: OrderUpdateData) {
   try {

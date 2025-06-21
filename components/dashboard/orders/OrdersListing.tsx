@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect, useCallback } from "react"
 import { format } from "date-fns"
 import * as XLSX from "xlsx"
@@ -36,37 +38,37 @@ interface Order {
   deliveryFee: number
   discount: number
   total: number
-  shippingAddressId: string | null // Changed from undefined to null
-  billingAddressId?: string | null // Added null option
-  estimatedDelivery: Date | null // Changed from undefined to null
-  actualDelivery: Date | null // Changed from undefined to null
-  trackingNumber: string | null // Changed from undefined to null
-  deliveryNotes: string | null // Changed from undefined to null
-  notes: string | null // Changed from undefined to null
-  internalNotes: string | null // Changed from undefined to null
+  shippingAddressId: string | null
+  billingAddressId?: string | null
+  estimatedDelivery: Date | null
+  actualDelivery: Date | null
+  trackingNumber: string | null
+  deliveryNotes: string | null
+  notes: string | null
+  internalNotes: string | null
   createdAt: Date | string
   updatedAt: Date | string
   items: Array<{
     id: string
     productId: string
-    variantId: string | null // Changed from undefined to null
+    variantId: string | null
     quantity: number
     unitPrice: number
     totalPrice: number
     product: {
       name: string
-      thumbnail: string | null // Changed from undefined to null
+      thumbnail: string | null
     }
     variant: {
       name: string
-    } | null // Changed from undefined to null
+    } | null
   }>
   shippingAddress: {
     streetLine1: string
     city: string
     state: string
     postalCode: string
-  } | null // Changed from undefined to null
+  } | null
 }
 
 // Form schema for updating orders
@@ -102,8 +104,12 @@ export default function OrdersListing({ title, userMap }: OrdersListingProps) {
 
   const router = useRouter()
 
-  // Navigation handler
-  const handleOrderClick = (order: Order) => {
+  // Navigation handler - only for row clicks, not action buttons
+  const handleOrderClick = (order: Order, event?: React.MouseEvent) => {
+    // Prevent navigation if clicking on action buttons
+    if (event?.target && (event.target as HTMLElement).closest("[data-action-button]")) {
+      return
+    }
     router.push(`/dashboard/orders/${order.id}`)
   }
 
@@ -354,7 +360,7 @@ export default function OrdersListing({ title, userMap }: OrdersListingProps) {
       header: "Payment",
       accessorKey: "paymentStatus",
       cell: (row) => (
-        <div className="flex flex-col">
+        <div className="flex flex-col items-start justify-center">
           <span
             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(row.paymentStatus)}`}
           >
@@ -414,7 +420,6 @@ export default function OrdersListing({ title, userMap }: OrdersListingProps) {
         onRowClick={handleOrderClick}
         actions={{
           onExport: handleExport,
-          // No onAdd since orders are created by customers
         }}
         filters={{
           searchFields: ["orderNumber", "userId"],
@@ -422,11 +427,9 @@ export default function OrdersListing({ title, userMap }: OrdersListingProps) {
           getItemDate: (item) => new Date(item.createdAt ?? 0),
         }}
         renderRowActions={(order) => (
-          <TableActions.RowActions
-            onEdit={() => handleEditClick(order)}
-            // No delete action for orders
-            // editLabel="Update Status"
-          />
+          <div data-action-button onClick={(e) => e.stopPropagation()}>
+            <TableActions.RowActions onEdit={() => handleEditClick(order)} />
+          </div>
         )}
       />
 
