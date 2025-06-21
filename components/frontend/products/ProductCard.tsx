@@ -5,7 +5,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
-import { Heart, ShoppingCart, Check, Loader2 } from "lucide-react" // Added Loader2
+import { Heart, ShoppingCart, Check, Loader2, Star } from "lucide-react" // Added Loader2
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -26,10 +26,101 @@ interface ProductWithDetails extends Product {
   }
 }
 
+interface ReviewData {
+  id: string
+  rating: number
+  isApproved: boolean
+}
+
+interface ProductWithReviews extends ProductWithDetails {
+  reviews?: ReviewData[]
+}
+
 interface ProductCardProps {
-  product: ProductWithDetails
+  product: ProductWithReviews
   viewMode: "grid" | "list"
   index: number
+}
+
+// Helper function to calculate rating statistics
+function calculateRatingStats(reviews: ReviewData[] = []) {
+  const approvedReviews = reviews.filter((review) => review.isApproved)
+
+  if (approvedReviews.length === 0) {
+    return {
+      averageRating: 0,
+      totalReviews: 0,
+      ratingDistribution: [0, 0, 0, 0, 0], // [1-star, 2-star, 3-star, 4-star, 5-star]
+    }
+  }
+
+  const totalRating = approvedReviews.reduce((sum, review) => sum + review.rating, 0)
+  const averageRating = totalRating / approvedReviews.length
+
+  // Calculate rating distribution
+  const distribution = [0, 0, 0, 0, 0]
+  approvedReviews.forEach((review) => {
+    if (review.rating >= 1 && review.rating <= 5) {
+      distribution[review.rating - 1]++
+    }
+  })
+
+  return {
+    averageRating: Math.round(averageRating * 10) / 10, // Round to 1 decimal
+    totalReviews: approvedReviews.length,
+    ratingDistribution: distribution,
+  }
+}
+
+// Star Rating Component
+function StarRating({
+  rating,
+  size = "sm",
+  showRating = true,
+  className = "",
+}: {
+  rating: number
+  size?: "xs" | "sm" | "md" | "lg"
+  showRating?: boolean
+  className?: string
+}) {
+  const sizeClasses = {
+    xs: "w-3 h-3",
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-6 h-6",
+  }
+
+  const textSizeClasses = {
+    xs: "text-xs",
+    sm: "text-sm",
+    md: "text-base",
+    lg: "text-lg",
+  }
+
+  return (
+    <div className={`flex items-center gap-1 ${className}`}>
+      <div className="flex items-center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`${sizeClasses[size]} ${
+              star <= Math.floor(rating)
+                ? "fill-yellow-400 text-yellow-400"
+                : star <= rating
+                  ? "fill-yellow-200 text-yellow-400"
+                  : "fill-gray-200 text-gray-300"
+            }`}
+          />
+        ))}
+      </div>
+      {showRating && (
+        <span className={`${textSizeClasses[size]} text-gray-600 font-medium ml-1`}>
+          {rating > 0 ? rating.toFixed(1) : "No reviews"}
+        </span>
+      )}
+    </div>
+  )
 }
 
 export default function ProductCard({ product, viewMode, index }: ProductCardProps) {
@@ -79,6 +170,8 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
   const isOutOfStock = product.stockQuantity === 0
   const isInCart = cart ? cart.isItemInCart(product.id) : false
   const isItemLoading = cart ? cart.isItemLoading(product.id) : false
+
+  const ratingStats = calculateRatingStats(product.reviews)
 
   if (viewMode === "list") {
     return (
@@ -144,6 +237,16 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
 
                     {/* Product Name */}
                     <h3 className="font-semibold text-xl text-gray-900 line-clamp-2">{product.name}</h3>
+
+                    {/* Rating */}
+                    <div className="flex items-center justify-between">
+                      <StarRating rating={ratingStats.averageRating} size="sm" />
+                      {ratingStats.totalReviews > 0 && (
+                        <span className="text-sm text-gray-500">
+                          ({ratingStats.totalReviews} review{ratingStats.totalReviews !== 1 ? "s" : ""})
+                        </span>
+                      )}
+                    </div>
 
                     {/* Key Features */}
                     <div className="space-y-1 text-sm text-gray-600">
@@ -249,6 +352,16 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
               <h3 className="font-semibold text-lg text-gray-900 line-clamp-2 leading-tight truncate">
                 {product.name}
               </h3>
+
+              {/* Rating */}
+              <div className="flex items-center justify-between mt-2">
+                <StarRating rating={ratingStats.averageRating} size="xs" showRating={false} />
+                <span className="text-xs text-gray-500">
+                  {ratingStats.totalReviews > 0
+                    ? `${ratingStats.averageRating} (${ratingStats.totalReviews})`
+                    : "No reviews"}
+                </span>
+              </div>
             </div>
 
             {/* Image Container */}

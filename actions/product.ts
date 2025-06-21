@@ -68,6 +68,15 @@ export async function getFeaturedProducts() {
         status: "ACTIVE",
       },
       include: {
+        reviews: {
+          // where: {
+          //   isApproved: true,
+          // },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 3,
+        },
         category: {
           select: {
             id: true,
