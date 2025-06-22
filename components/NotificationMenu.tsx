@@ -39,6 +39,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { markOrderAsRead } from "@/actions/notifications";
+import { useRouter } from "next/navigation";
 
 export function NotificationMenu({
   notifications = [],
@@ -46,9 +48,25 @@ export function NotificationMenu({
   notifications: any[];
 }) {
   // console.log(cartItems);
+
+  const router = useRouter();
+
+  const handleClick = async (id: string) => {
+    try {
+      const res = await markOrderAsRead(id);
+     if(res?.status === 200) {
+      toast.success(res.message || "Notification marked as read");
+       router.push(`/dashboard/orders/${id}`);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to mark notification as read");
+    }
+   
+  }
   async function handleChangeStatus(id: string) {
     try {
-      // await updateNotificationStatusById(id);
+      await markOrderAsRead(id);
       toast.success("Notification removed successfully");
     } catch (error) {
       console.log(error);
@@ -68,9 +86,9 @@ export function NotificationMenu({
       {notifications && notifications.length > 0 ? (
         <SheetContent side={"left"} className="w-[400px] sm:w-[540px]">
           <SheetHeader>
-            <h2 className="scroll-m-20 text-xl font-semibold tracking-tight first:mt-0 border-b pb-3">
+            <SheetTitle className="scroll-m-20 text-xl font-semibold tracking-tight first:mt-0 border-b pb-3">
               Notifications ({notifications.length})
-            </h2>
+            </SheetTitle>
           </SheetHeader>
           {/* CONTENT HWRE */}
           <ScrollArea className="h-[500px] w-full  p-2">
@@ -97,9 +115,10 @@ export function NotificationMenu({
 
                 return (
                   <div
+                  onClick={() => handleClick(item.id)}
                     key={i}
                     className={cn(
-                      "flex justify-between gap-4 py-3 border-b-2 items-center px-3 rounded-md",
+                      "flex justify-between gap-4 py-3 border-b-2 items-center px-3 rounded-md cursor-pointer",
                       statusClass
                     )}
                   >
@@ -130,9 +149,9 @@ export function NotificationMenu({
       ) : (
         <SheetContent side={"left"} className="w-[400px] sm:w-[540px]">
           <SheetHeader>
-            <h2 className="scroll-m-20 text-xl font-semibold tracking-tight first:mt-0 border-b pb-3">
+            <SheetTitle className="scroll-m-20 text-xl font-semibold tracking-tight first:mt-0 border-b pb-3">
               Notifications
-            </h2>
+            </SheetTitle>
           </SheetHeader>
           {/* CONTENT HWRE */}
           <div className="min-h-80  flex-col space-y-4 flex items-center justify-center">

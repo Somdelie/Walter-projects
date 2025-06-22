@@ -52,10 +52,15 @@ export async function getNewOrderNotifications(): Promise<OrderNotification[]> {
 
 export async function markOrderAsRead(orderId: string) {
   try {
-    await db.order.update({
+    const updatedNotification = await db.order.update({
       where: { id: orderId },
       data: { isNewOrder: false },
     });
+    return {
+      status: 200,
+      message: "Order marked as read",
+      notification: updatedNotification,
+    };
   } catch (error) {
     console.error("Error marking order as read:", error);
   }
