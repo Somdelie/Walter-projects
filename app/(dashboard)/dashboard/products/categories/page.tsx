@@ -12,10 +12,9 @@ import { CategoryForm } from "@/components/Forms/CategoryForm";
 import TableLoading from "@/components/ui/TableLoading";
 
 export default async function page() {
-  const user = await getAuthenticatedUser();
 
   // Create an empty array as fallback to ensure data is never null
- const { data: categories, error } = await getCategories();
+ const { data: categories } = await getCategories();
 
   return (
     <Suspense fallback={<TableLoading/>}>

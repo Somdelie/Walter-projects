@@ -50,7 +50,12 @@ const routePermissions: Record<string, string[]> = {
 
 // Helper function to check if the route requires authentication
 function isPublicRoute(path: string): boolean {
-  return publicRoutes.some((route) => path.startsWith(route));
+  return publicRoutes.some((route) => {
+    if (route === "/") {
+      return path === "/";
+    }
+    return path.startsWith(route);
+  });
 }
 
 // Helper function to check if the route requires specific permissions

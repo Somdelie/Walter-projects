@@ -188,6 +188,7 @@ export async function deleteCategoryById(id: string) {
       return {
         success: false,
         error: `Cannot delete category. It has ${category.Product.length} products assigned to it.`,
+        status: 405,
       };
     }
 

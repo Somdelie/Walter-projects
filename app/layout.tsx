@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { Rethink_Sans } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "react-hot-toast";
 import Providers from "@/components/Providers";
-import { CartProvider } from "@/contexts/cart-context";
-import { getAuthenticatedUser } from "@/config/useAuth";
-import { WishlistProvider } from "@/contexts/wishlist-context";
 // import FooterBanner from "@/components/Footer";
 const inter = Rethink_Sans({ subsets: ["latin"], display: "swap" });
 

@@ -51,6 +51,7 @@ import { useCart } from "@/contexts/cart-context"
 import { useWishlist } from "@/contexts/wishlist-context"
 import { signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { AuthenticatedUser } from "@/config/useAuth"
 
 const productCategories = [
   {
@@ -116,17 +117,17 @@ const companyLinks = [
   },
 ]
 
-type User = {
-  id: string
-  name?: string | null
-  email?: string | null
-  image?: string | null
-  isAdmin?: boolean
-}
+// type User = {
+//   id: string
+//   name?: string | null
+//   email?: string | null
+//   image?: string | null
+//   isAdmin?: boolean
+// }
 
 
 
-export default function SiteHeader({ user }: { user: User }) {
+export default function SiteHeader({ user }: { user: AuthenticatedUser | null }) {
   const [open, setOpen] = React.useState(false)
   const [showProducts, setShowProducts] = React.useState(false)
   const [showCompany, setShowCompany] = React.useState(false)

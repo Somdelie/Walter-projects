@@ -41,9 +41,9 @@ export default function ActionColumn({
 
   // Function to extract category data from different possible structures
   const getCategoryData = (rowData: any): CategoryProps | null => {
-    console.log("Raw row data:", rowData);
-    console.log("Row data type:", typeof rowData);
-    console.log("Row data keys:", rowData ? Object.keys(rowData) : "No keys");
+    // console.log("Raw row data:", rowData);
+    // console.log("Row data type:", typeof rowData);
+    // console.log("Row data keys:", rowData ? Object.keys(rowData) : "No keys");
 
     // If rowData is the category itself
     if (rowData && rowData.id && rowData.title) {
@@ -119,14 +119,14 @@ export default function ActionColumn({
       setCategoryToDelete(null);
       
       // Call refetch if provided
-      if (onRefetch) {
-        onRefetch();
-      }
+      // if (onRefetch) {
+      //   onRefetch();
+      // }
       
       toast.success(`Category "${categoryToDelete.title}" deleted successfully`);
     } catch (error) {
       console.error("Error deleting category:", error);
-      toast.error("Failed to delete category. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Failed to delete category");
     }
   };
 
