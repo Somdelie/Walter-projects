@@ -1,11 +1,10 @@
 // actions/categories.ts
 "use server";
 
-import { CategoryProps } from "@/types/category";
+import { CategoryCreateData, CategoryMutationData } from "@/types/category";
 import { generateSlug } from "@/lib/generateSlug";
 import { revalidatePath } from "next/cache";
 import { db } from "@/prisma/db";
-import { CategoryFormProps } from "@/components/Forms/CategoryForm";
 
 // Get all categories with their relationships
 export async function getCategories() {
@@ -63,7 +62,7 @@ export async function getCategoryById(id: string) {
 
 // Create new category
 //create a new category
-export async function createCategory(data: CategoryFormProps) {
+export async function createCategory(data: CategoryCreateData) {
   try {
     // Check if the brand already exists
     const existingCategory = await db.category.findFirst({
@@ -95,7 +94,10 @@ export async function createCategory(data: CategoryFormProps) {
 }
 
 // Update category
-export async function updateCategoryById(id: string, data: CategoryProps) {
+export async function updateCategoryById(
+  id: string,
+  data: CategoryMutationData
+) {
   try {
     // Check if category exists
     const existingCategory = await db.category.findUnique({
@@ -149,6 +151,8 @@ export async function updateCategoryById(id: string, data: CategoryProps) {
     revalidatePath("/dashboard/products/categories");
     return {
       data: category,
+      success: true,
+      status: 200,
       error: null,
     };
   } catch (error) {
@@ -162,6 +166,7 @@ export async function updateCategoryById(id: string, data: CategoryProps) {
 
 // Delete category
 export async function deleteCategoryById(id: string) {
+  console.log("Deleting category with ID:", id);
   try {
     // Check if category has products
     const category = await db.category.findUnique({
@@ -172,6 +177,7 @@ export async function deleteCategoryById(id: string) {
     });
 
     if (!category) {
+      console.log("Category not found:", id);
       return {
         success: false,
         error: "Category not found",
@@ -192,6 +198,9 @@ export async function deleteCategoryById(id: string) {
     revalidatePath("/dashboard/products/categories");
     return {
       success: true,
+      status: 200,
+      message: "Category deleted successfully",
+      data: null,
       error: null,
     };
   } catch (error) {

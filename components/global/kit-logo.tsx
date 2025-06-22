@@ -21,7 +21,7 @@ const HubStackLogo = ({
   return (
     <div className={className}>
       <svg
-        xmlns="http://www.w3.org/2000/svg"
+        xmlns="https://www.w3.org/2000/svg"
         viewBox="0 0 400 120"
         className={`w-full h-auto`}
         style={{ maxWidth: width, maxHeight: height }}

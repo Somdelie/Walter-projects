@@ -6,6 +6,7 @@ import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import { ColumnDef } from "@tanstack/react-table";
 import ActionColumn from "@/components/DataTableColumns/ActionColumn";
 import { CategoryWithRelations } from "@/types/category";
+import { EditCategoryForm } from "@/components/Forms/CategoryEditForm";
 export const columns: ColumnDef<CategoryWithRelations>[] = [
   {
     id: "select",
@@ -48,7 +49,8 @@ export const columns: ColumnDef<CategoryWithRelations>[] = [
         <ActionColumn
           row={row}
           model="category"
-          editEndpoint={`categories/update/${category.id}`}
+          editEndpoint={'#'}
+
           id={category.id}
         />
       );

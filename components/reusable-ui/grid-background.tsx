@@ -14,7 +14,7 @@ const GridBackground: React.FC<GridBackgroundProps> = ({
     <div className={cn("relative min-h-screen w-full bg-slate-50", className)}>
       {/* Grid Pattern SVG */}
       <div className="absolute inset-0 z-0" aria-hidden="true">
-        <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+        <svg className="h-full w-full" xmlns="https://www.w3.org/2000/svg">
           <defs>
             <pattern
               id="grid-pattern"

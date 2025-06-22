@@ -21,7 +21,7 @@ const Footer = () => {
                 >
                   <svg
                     className="w-4 h-4"
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="http:s//www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -38,7 +38,7 @@ const Footer = () => {
                 >
                   <svg
                     className="w-4 h-4"
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="https://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -55,7 +55,7 @@ const Footer = () => {
                 >
                   <svg
                     className="w-4 h-4"
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="https://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -74,7 +74,7 @@ const Footer = () => {
                 >
                   <svg
                     className="w-4 h-4"
-                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns="https://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
@@ -225,7 +225,7 @@ const Footer = () => {
         <hr className="mt-16 mb-10 border-gray-200" />
 
         <p className="text-sm text-center text-gray-600">
-          © Copyright 2021, All Rights Reserved by Postcraft
+          © Copyright 2021, All Rights Reserved by Walter Projects
         </p>
       </div>
     </section>

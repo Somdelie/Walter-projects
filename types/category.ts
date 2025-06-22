@@ -2,8 +2,9 @@
 export interface CategoryProps {
   title: string;
   slug?: string;
-  description?: string;
-  imageUrl?: string;
+  description?: string | null; // Changed to match database schema
+  imageUrl?: string | null; // Changed to match database schema
+  id: string;
 }
 
 export interface CategoryWithRelations {
@@ -28,4 +29,17 @@ export interface CategoryFormData {
 export interface CategorySelectOption {
   label: string;
   value: string;
+}
+
+export interface CategoryCreateData {
+  title: string;
+  slug: string;
+  imageUrl?: string;
+}
+
+export interface CategoryMutationData {
+  title: string;
+  slug?: string;
+  description?: string;
+  imageUrl?: string;
 }
