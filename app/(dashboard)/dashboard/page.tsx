@@ -17,23 +17,6 @@ export default async function Dashboard() {
     );
   }
 
-  if(!users || users.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold text-gray-600">No users found</h1>
-      </div>
-    );
-  }
-  if(!orders) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold text-gray-600">No orders found</h1>
-      </div>
-    );
-  }
-
-  console.log(orders, 'orders in dashboard page');
-
   return (
     <main>
       <DashboardMain users={users} orders={orders as any}/>
