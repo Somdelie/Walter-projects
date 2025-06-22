@@ -1,9 +1,14 @@
 "use server";
+
 import { revalidatePath } from "next/cache";
 import { db } from "@/prisma/db";
-import { OrderUpdateData } from "@/types/orders";
+import type { OrderUpdateData } from "@/types/orders";
 import { getAuthenticatedUser } from "@/config/useAuth";
 import { cache } from "react";
+import { Resend } from "resend";
+import OrderConfirmationEmail from "@/components/email-templates/order-confirmation-email";
+import AdminOrderNotificationEmail from "@/components/email-templates/admin-order-notification-email";
+
 interface CreateOrderData {
   // Address info
   firstName: string;
@@ -40,6 +45,16 @@ interface CreateOrderData {
   total: number;
 }
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Function to generate a professional tracking number
+const generateTrackingNumber = (): string => {
+  const prefix = "WP"; // WalterProjects prefix
+  const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase(); // Random alphanumeric
+  return `${prefix}${timestamp}${random}`;
+};
+
 export async function createOrder(data: CreateOrderData) {
   try {
     const user = await getAuthenticatedUser();
@@ -63,6 +78,9 @@ export async function createOrder(data: CreateOrderData) {
     // Generate order number
     const orderCount = await db.order.count();
     const orderNumber = `ORD-${String(orderCount + 1).padStart(6, "0")}`;
+
+    // Generate tracking number
+    const trackingNumber = generateTrackingNumber();
 
     // Calculate fees
     const deliveryFee = data.deliveryMethod === "DELIVERY" ? 150 : 0;
@@ -88,7 +106,7 @@ export async function createOrder(data: CreateOrderData) {
       },
     });
 
-    // Create order
+    // Create order with tracking number
     const order = await db.order.create({
       data: {
         orderNumber,
@@ -102,6 +120,7 @@ export async function createOrder(data: CreateOrderData) {
         deliveryFee,
         discount,
         total: data.total,
+        trackingNumber, // Add tracking number here
         shippingAddressId: shippingAddress.id,
         notes: data.notes,
         items: {
@@ -117,13 +136,124 @@ export async function createOrder(data: CreateOrderData) {
       include: {
         items: {
           include: {
-            product: true,
-            variant: true,
+            product: {
+              select: {
+                name: true,
+                thumbnail: true,
+              },
+            },
+            variant: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
         shippingAddress: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
       },
     });
+
+    // Prepare email data
+    const emailItems = order.items.map((item) => ({
+      name: item.product.name,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice,
+      variant: item.variant?.name,
+      thumbnail: item.product.thumbnail ?? undefined,
+    }));
+
+    const orderTrackingUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/orders/${order.id}`;
+    const orderManagementUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/dashboard/orders/${order.id}`;
+
+    // Send emails concurrently
+    try {
+      await Promise.allSettled([
+        // Send customer confirmation email
+        resend.emails.send({
+          from: "WalterProjects <admin@cautiousndlovu.co.za>",
+          to: data.email,
+          subject: `Order Confirmation - ${orderNumber}`,
+          react: OrderConfirmationEmail({
+            customerName: data.firstName,
+            orderNumber: order.orderNumber,
+            trackingNumber: order.trackingNumber!,
+            orderDate: order.createdAt.toLocaleDateString("en-ZA"),
+            items: emailItems,
+            subtotal: order.subtotal,
+            taxAmount: order.taxAmount,
+            deliveryFee: order.deliveryFee,
+            discount: order.discount,
+            total: order.total,
+            deliveryMethod: order.deliveryMethod,
+            paymentMethod: order.paymentMethod,
+            shippingAddress: order.shippingAddress
+              ? {
+                  firstName: order.shippingAddress.firstName,
+                  lastName: order.shippingAddress.lastName,
+                  streetLine1: order.shippingAddress.streetLine1,
+                  streetLine2: order.shippingAddress.streetLine2 || "",
+                  city: order.shippingAddress.city,
+                  state: order.shippingAddress.state,
+                  postalCode: order.shippingAddress.postalCode,
+                  country: order.shippingAddress.country,
+                }
+              : undefined,
+            orderTrackingUrl,
+          }),
+        }),
+
+        // Send admin notification email
+        resend.emails.send({
+          from: "WalterProjects Orders <admin@cautiousndlovu.co.za>",
+          to: "info@walterprojects.co.za",
+          subject: `🚨 New Order Alert - ${orderNumber} from ${data.firstName} ${data.lastName}`,
+          react: AdminOrderNotificationEmail({
+            customerName: `${data.firstName} ${data.lastName}`,
+            customerEmail: data.email,
+            customerPhone: data.phone,
+            orderNumber: order.orderNumber,
+            trackingNumber: order.trackingNumber!,
+            orderDate: order.createdAt.toLocaleDateString("en-ZA"),
+            items: emailItems,
+            subtotal: order.subtotal,
+            taxAmount: order.taxAmount,
+            deliveryFee: order.deliveryFee,
+            discount: order.discount,
+            total: order.total,
+            deliveryMethod: order.deliveryMethod,
+            paymentMethod: order.paymentMethod,
+            shippingAddress: order.shippingAddress
+              ? {
+                  firstName: order.shippingAddress.firstName,
+                  lastName: order.shippingAddress.lastName,
+                  streetLine1: order.shippingAddress.streetLine1,
+                  streetLine2: order.shippingAddress.streetLine2 || "",
+                  city: order.shippingAddress.city,
+                  state: order.shippingAddress.state,
+                  postalCode: order.shippingAddress.postalCode,
+                  country: order.shippingAddress.country,
+                }
+              : undefined,
+            notes: data.notes,
+            orderManagementUrl,
+          }),
+        }),
+      ]);
+
+      console.log(
+        "Order confirmation and admin notification emails sent successfully"
+      );
+    } catch (emailError) {
+      console.error("Failed to send order emails:", emailError);
+      // Don't fail the order creation if email fails
+    }
 
     // Clear user's cart
     await db.cartItem.deleteMany({
@@ -132,6 +262,7 @@ export async function createOrder(data: CreateOrderData) {
 
     revalidatePath("/orders");
     revalidatePath("/cart");
+    revalidatePath("/dashboard/orders");
 
     return { success: true, data: order };
   } catch (error) {
@@ -307,65 +438,6 @@ export async function getUserOrders() {
     };
   }
 }
-
-// export async function getOrderById(id: string) {
-//   try {
-//     const order = await db.order.findUnique({
-//       where: { id },
-//       include: {
-//         user: {
-//           select: {
-//             id: true,
-//             name: true,
-//             email: true,
-//             firstName: true,
-//             lastName: true,
-//           },
-//         },
-//         items: {
-//           include: {
-//             product: {
-//               select: {
-//                 id: true,
-//                 name: true,
-//                 thumbnail: true,
-//               },
-//             },
-//             variant: {
-//               select: {
-//                 id: true,
-//                 name: true,
-//               },
-//             },
-//           },
-//         },
-//         shippingAddress: true,
-//         payments: true,
-//       },
-//     });
-
-//     if (!order) {
-//       return null;
-//     }
-
-//     return {
-//       ...order,
-//       subtotal: Number(order.subtotal),
-//       taxAmount: Number(order.taxAmount),
-//       deliveryFee: Number(order.deliveryFee),
-//       discount: Number(order.discount),
-//       total: Number(order.total),
-//       items: order.items.map((item) => ({
-//         ...item,
-//         unitPrice: Number(item.unitPrice),
-//         totalPrice: Number(item.totalPrice),
-//       })),
-//     };
-//   } catch (error) {
-//     console.error("Error fetching order:", error);
-//     return null;
-//   }
-// }
 
 // Cache the order fetch for better performance
 export const getOrderById = cache(async (orderId: string) => {

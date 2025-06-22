@@ -373,6 +373,7 @@ model Order {
   paymentMethod  PaymentMethod
   paymentStatus  PaymentStatus  @default(PENDING)
   deliveryMethod DeliveryMethod
+  isNewOrder     Boolean        @default(true) // For new orders
 
   // Pricing
   subtotal    Float

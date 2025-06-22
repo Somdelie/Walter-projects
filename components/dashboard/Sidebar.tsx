@@ -11,10 +11,12 @@ import type { Session } from "next-auth"
 import { signOut } from "next-auth/react"
 import { NotificationMenu } from "../NotificationMenu"
 import { UserDropdownMenu } from "../UserDropdownMenu"
+import { OrderNotification } from "@/actions/notifications"
+
 
 interface SidebarProps {
   session: Session
-  notifications?: Notification[]
+  notifications?: OrderNotification[]
 }
 
 export default function Sidebar({ session, notifications = [] }: SidebarProps) {
@@ -51,9 +53,9 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
   }
 
   return (
-    <div className="fixed top-0 left-0 h-full w-[220px] lg:w-[280px] border-r border-border bg hidden md:block overflow-y-auto shadow-sm">
+    <div className="fixed top-0 left-0 h-full w-[220px] lg:w-[280px] border-r border-border bg-background hidden md:block overflow-y-auto shadow-sm">
       <div className="flex h-full max-h-screen flex-col gap-2">
-        <div className="flex flex-shrink-0 h-14 items-center border-b border-border px-4 lg:h-[60px] lg:px-6 bg">
+        <div className="flex flex-shrink-0 h-14 items-center border-b border-border px-4 lg:h-[60px] lg:px-6 bg-background">
           <div className="flex items-center gap-2">
             <Building2 className="h-6 w-6 text-sky-600" />
             <span className="font-bold text-lg text-sky-600">WalterProjects</span>
@@ -65,9 +67,7 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
 
         <div className="flex-1">
           <div className="px-4 py-2">
-            <p className="text-xs font-medium text-foreground/60 uppercase tracking-wider mb-2">
-              Main Navigation
-            </p>
+            <p className="text-xs font-medium text-foreground/60 uppercase tracking-wider mb-2">Main Navigation</p>
           </div>
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-1">
             {filteredLinks.map((item, i) => {
@@ -133,9 +133,7 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
             })}
 
             <div className="mt-6 px-4 py-2">
-              <p className="text-xs font-medium text-foreground/60 uppercase tracking-wider mb-2">
-                External Links
-              </p>
+              <p className="text-xs font-medium text-foreground/60 uppercase tracking-wider mb-2">External Links</p>
             </div>
 
             <Link
