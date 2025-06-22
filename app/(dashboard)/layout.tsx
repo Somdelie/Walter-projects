@@ -26,7 +26,7 @@ export default async function DashboardLayout({
     <div className="min-h-screen w-full">
       <Sidebar session={session} notifications={notifications} />
       <div className="md:ml-[220px] lg:ml-[280px]">
-        <Navbar session={session} />
+        <Navbar session={session} notifications={notifications}/>
         <div className="p-8">{children}</div>
       </div>
     </div>

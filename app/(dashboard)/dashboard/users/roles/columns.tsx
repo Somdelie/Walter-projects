@@ -7,8 +7,8 @@ import DateColumn from "@/components/DataTableColumns/DateColumn";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Role } from "@prisma/client";
-import ActionColumn from "@/components/DataTableColumns/ActionColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
+import { ActionColumn } from "@/components/DataTableColumns/ActionColumn";
 export const columns: ColumnDef<Role>[] = [
   {
     id: "select",
@@ -59,7 +59,7 @@ export const columns: ColumnDef<Role>[] = [
         <ActionColumn
           row={row}
           model="role"
-          editEndpoint={`roles/update/${role.id}`}
+          // editEndpoint={`roles/update/${role.id}`}
           id={role.id}
         />
       );

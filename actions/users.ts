@@ -8,6 +8,7 @@ import { PasswordProps } from "@/components/Forms/ChangePasswordForm";
 import { Resend } from "resend";
 import { generateToken } from "@/lib/token";
 import { getAuthenticatedUser } from "@/config/useAuth";
+import { User, UserEditData } from "@/types/user";
 // import { generateNumericToken } from "@/lib/token";
 const resend = new Resend(process.env.RESEND_API_KEY);
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
@@ -135,6 +136,27 @@ export async function getAllUsers() {
   } catch (error) {
     console.error("Error fetching the count:", error);
     return 0;
+  }
+}
+
+// function to get users who are not admins
+export async function getNonAdminUsers() {
+  try {
+    const users = await db.user.findMany({
+      where: {
+        isAdmin: false,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        roles: true,
+      },
+    });
+    return users;
+  } catch (error) {
+    console.error("Error fetching non-admin users:", error);
+    return [];
   }
 }
 
@@ -322,4 +344,37 @@ export async function getAdminUser() {
       data: adminUser[0],
     };
   } catch (error) {}
+}
+
+export async function updateUser(id: string, data: UserEditData) {
+  try {
+    const updatedUser = await db.user.update({
+      where: {
+        id,
+      },
+      data: {
+        phone: data.phone,
+        status: data.status,
+        emailVerified: data.emailVerified,
+        isVerfied: !!data.emailVerified, // Convert emailVerified to a boolean
+        isAdmin: data.isAdmin,
+        image: data.image,
+      },
+    });
+
+    revalidatePath("/dashboard/users");
+
+    return {
+      error: null,
+      status: 200,
+      data: updatedUser,
+    };
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return {
+      error: "Failed to update user",
+      status: 500,
+      data: null,
+    };
+  }
 }

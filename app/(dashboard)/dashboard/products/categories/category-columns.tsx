@@ -1,21 +1,18 @@
-"use client";
-import { Checkbox } from "@/components/ui/checkbox";
+"use client"
 
-import DateColumn from "@/components/DataTableColumns/DateColumn";
-import SortableColumn from "@/components/DataTableColumns/SortableColumn";
-import { ColumnDef } from "@tanstack/react-table";
-import ActionColumn from "@/components/DataTableColumns/ActionColumn";
-import { CategoryWithRelations } from "@/types/category";
-import { EditCategoryForm } from "@/components/Forms/CategoryEditForm";
+import { Checkbox } from "@/components/ui/checkbox"
+import type { ColumnDef } from "@tanstack/react-table"
+import type { CategoryWithRelations } from "@/types/category"
+import SortableColumn from "@/components/DataTableColumns/SortableColumn"
+import DateColumn from "@/components/DataTableColumns/DateColumn"
+import { ActionColumn } from "@/components/DataTableColumns/ActionColumn"
+
 export const columns: ColumnDef<CategoryWithRelations>[] = [
   {
     id: "select",
     header: ({ table }) => (
       <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
+        checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
       />
@@ -34,7 +31,6 @@ export const columns: ColumnDef<CategoryWithRelations>[] = [
     accessorKey: "title",
     header: ({ column }) => <SortableColumn column={column} title="Title" />,
   },
-
   {
     accessorKey: "createdAt",
     header: "Date Created",
@@ -44,16 +40,8 @@ export const columns: ColumnDef<CategoryWithRelations>[] = [
     header: "Actions",
     id: "actions",
     cell: ({ row }) => {
-      const category = row.original;
-      return (
-        <ActionColumn
-          row={row}
-          model="category"
-          editEndpoint={'#'}
+      return <ActionColumn row={row} model="category" id={row.original.id} />
 
-          id={category.id}
-        />
-      );
     },
   },
-];
+]

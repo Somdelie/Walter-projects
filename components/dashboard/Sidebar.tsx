@@ -12,6 +12,7 @@ import { signOut } from "next-auth/react"
 import { NotificationMenu } from "../NotificationMenu"
 import { UserDropdownMenu } from "../UserDropdownMenu"
 import { OrderNotification } from "@/actions/notifications"
+import { ScrollArea } from "../ui/scroll-area"
 
 
 interface SidebarProps {
@@ -65,7 +66,8 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
           </div>
         </div>
 
-        <div className="flex-1">
+             <ScrollArea className="flex-1">
+
           <div className="px-4 py-2">
             <p className="text-xs font-medium text-foreground/60 uppercase tracking-wider mb-2">Main Navigation</p>
           </div>
@@ -145,7 +147,7 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
               Live Website
             </Link>
           </nav>
-        </div>
+        </ScrollArea>
 
         <div className="mt-auto p-4 border-t border-border">
           <UserDropdownMenu

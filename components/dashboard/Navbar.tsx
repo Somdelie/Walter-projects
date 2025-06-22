@@ -3,9 +3,8 @@ import React from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Session } from "next-auth";
-import { AvatarMenuButton } from "./AvatarMenuButton";
 import Logo from "../global/Logo";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
@@ -13,8 +12,16 @@ import { signOut } from "next-auth/react";
 import { sidebarLinks } from "@/config/sidebar";
 import { usePermission } from "@/hooks/usePermissions";
 import { UserDropdownMenu } from "../UserDropdownMenu";
+import { ScrollArea } from "../ui/scroll-area";
+import { NotificationMenu } from "../NotificationMenu";
+import { OrderNotification } from "@/actions/notifications";
 
-export default function Navbar({ session }: { session: Session }) {
+interface SidebarProps {
+  session: Session
+  notifications?: OrderNotification[]
+}
+
+export default function Navbar({ session, notifications = [] }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { hasPermission } = usePermission();
@@ -70,7 +77,7 @@ export default function Navbar({ session }: { session: Session }) {
   async function handleLogout() {
     try {
       await signOut();
-      router.push("/login");
+      router.push("/");
     } catch (error) {
       console.log(error);
     }
@@ -86,11 +93,22 @@ export default function Navbar({ session }: { session: Session }) {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col">
+
+         
+           
+              <SheetTitle className="hidden">Navigation Menu</SheetTitle>
+        
+        
           <nav className="grid gap-2 text-lg font-medium">
-            <Logo href="/dashboard" />
+            <div className="flex items-center">   <Logo href="/dashboard" />
+            <div className=" flex items-center gap-2">
+                        <NotificationMenu notifications={notifications} />
+                      </div></div>
+         
 
             {/* Render mobile navigation links */}
-            {mobileLinks.map((item, i) => {
+
+            <ScrollArea className="flex-1 h-[60vh] overflow-y-auto">  {mobileLinks.map((item, i) => {
               const Icon = item.icon;
               const isActive = item.href === pathname;
 
@@ -107,7 +125,9 @@ export default function Navbar({ session }: { session: Session }) {
                   {item.title}
                 </Link>
               );
-            })}
+            })}</ScrollArea>
+            
+          
           </nav>
 
           <div className="mt-auto">

@@ -1,14 +1,12 @@
-import { getDashboardOverview } from "@/actions/analytics";
+
 import { getAllOrders } from "@/actions/orders";
-import { getAllUsers } from "@/actions/users";
+import { getNonAdminUsers } from "@/actions/users";
 import DashboardMain from "@/components/dashboard/DashboardMain";
 import { getAuthenticatedUser } from "@/config/useAuth";
-import { Order } from "@/types/orders";
 
 export default async function Dashboard() {
-  const analytics = (await getDashboardOverview()) || [];
   const user = await getAuthenticatedUser();
-  const users = await getAllUsers();
+  const users = await getNonAdminUsers();
   const orders = await getAllOrders();
 
   if (!user) {

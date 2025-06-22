@@ -4,8 +4,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import { ColumnDef } from "@tanstack/react-table";
-import ActionColumn from "@/components/DataTableColumns/ActionColumn";
 import { Product } from "@prisma/client";
+import { ActionColumn } from "@/components/DataTableColumns/ActionColumn";
 
 
 export const columns: ColumnDef<Product>[] = [
@@ -50,7 +50,6 @@ export const columns: ColumnDef<Product>[] = [
         <ActionColumn
           row={row}
           model="category"
-          editEndpoint={`categories/update/${category.id}`}
           id={category.id}
         />
       );

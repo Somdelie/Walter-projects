@@ -1,8 +1,15 @@
 // "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AnalyticsProps } from "@/actions/analytics";
 import Link from "next/link";
+
+interface AnalyticsProps {
+  title: string;
+  total: number;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  isCurrency?: boolean;
+}
 
 export default function OverViewCard({ item }: { item: AnalyticsProps }) {
   const Icon = item.icon;

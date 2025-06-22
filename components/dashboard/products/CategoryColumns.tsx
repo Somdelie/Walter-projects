@@ -4,8 +4,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import DateColumn from "@/components/DataTableColumns/DateColumn";
 import SortableColumn from "@/components/DataTableColumns/SortableColumn";
 import { ColumnDef } from "@tanstack/react-table";
-import ActionColumn from "@/components/DataTableColumns/ActionColumn";
 import { CategoryWithRelations } from "@/types/category";
+import { ActionColumn } from "@/components/DataTableColumns/ActionColumn";
 
 export const categoryColumns: ColumnDef<CategoryWithRelations>[] = [
   {
@@ -85,7 +85,7 @@ export const categoryColumns: ColumnDef<CategoryWithRelations>[] = [
         <ActionColumn
           row={row}
           model="category"
-          editEndpoint={`categories/update/${category.id}`}
+         
           id={category.id}
         />
       );

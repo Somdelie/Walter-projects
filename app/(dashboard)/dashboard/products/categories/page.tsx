@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { columns } from "./columns";
+import { columns } from "./category-columns";
 import DataTable from "@/components/DataTableComponents/DataTable";
 import { getAuthenticatedUser } from "@/config/useAuth";
 import EmptyState from "@/components/global/EmptyState";

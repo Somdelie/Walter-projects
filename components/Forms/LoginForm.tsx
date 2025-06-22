@@ -123,7 +123,7 @@ export default function LoginForm() {
               </div>
               <h1 className="text-3xl font-bold mb-2 leading-tight">
                 Welcome Back to
-                <span className="block text-blue-300 text-4xl">AlumCore</span>
+                <span className="block text-blue-300 text-4xl">WalterProjects</span>
               </h1>
               <p className="text-slate-200 mb-6 leading-relaxed text-sm max-w-sm">
                 Sign in to access your account and continue shopping for premium aluminum windows, doors, and building
@@ -187,7 +187,7 @@ export default function LoginForm() {
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-700 to-slate-900 bg-clip-text text-transparent">
                     Welcome Back
                   </h1>
-                  <p className="text-sm mt-1 text-slate-600">Sign in to your AlumCore account to continue shopping</p>
+                  <p className="text-sm mt-1 text-slate-600">Sign in to your WalterProjects account to continue shopping</p>
                 </motion.div>
               </div>
 

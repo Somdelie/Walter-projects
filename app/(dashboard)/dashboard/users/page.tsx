@@ -1,7 +1,7 @@
 import DataTable from "@/components/DataTableComponents/DataTable";
 import TableHeader from "@/components/dashboard/Tables/TableHeader";
-import { columns } from "./columns";
 import { getAllUsers } from "@/actions/users";
+import { columns } from "./user-columns";
 
 export default async function page() {
   const users = (await getAllUsers()) || [];
