@@ -204,9 +204,9 @@ export default function SiteHeader({ user }: { user: AuthenticatedUser | null })
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center space-x-2 text-2xl font-bold text-slate-800 hover:text-orange-600 transition-colors duration-200"
+            className="flex items-center space-x-2 text-2xl font-bold text-slate-800 hover:text-sky-600 transition-colors duration-200"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-slate-700 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-sky-600 to-slate-700 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">WP</span>
             </div>
             <span className="text-primary text-sm">Walter Projects</span>

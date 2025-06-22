@@ -32,7 +32,7 @@ export default function StatsSection() {
   }, [])
 
   return (
-    <section id="stats-section" className="py-10 bg-orange-600">
+    <section id="stats-section" className="py-10 bg-sky-600">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           {stats.map((stat, index) => (

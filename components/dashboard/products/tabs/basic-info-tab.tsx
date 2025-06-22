@@ -245,7 +245,7 @@ export function BasicInfoTab({ product, categoryOptions }: BasicInfoTabProps) {
                   </div>
                   <div>
                     <span className="font-medium text-gray-700">Price:</span>
-                    <span className="ml-2 text-orange-800 font-semibold">{formatPrice(
+                    <span className="ml-2 text-sky-800 font-semibold">{formatPrice(
                       product.price || 0
                     )}</span>
                   </div>

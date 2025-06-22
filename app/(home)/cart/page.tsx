@@ -216,7 +216,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Button className="w-full bg-primary hover:bg-orange-700" size="lg" asChild>
+                  <Button className="w-full bg-primary hover:bg-sky-700" size="lg" asChild>
                     <Link href="/checkout">Proceed to Checkout</Link>
                   </Button>
                   <Button variant="outline" className="w-full" asChild>

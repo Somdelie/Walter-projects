@@ -55,8 +55,8 @@ export default function Sidebar({ session, notifications = [] }: SidebarProps) {
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex flex-shrink-0 h-14 items-center border-b border-border px-4 lg:h-[60px] lg:px-6 bg">
           <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-orange-600" />
-            <span className="font-bold text-lg text-orange-600">WalterProjects</span>
+            <Building2 className="h-6 w-6 text-sky-600" />
+            <span className="font-bold text-lg text-sky-600">WalterProjects</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <NotificationMenu notifications={notifications} />

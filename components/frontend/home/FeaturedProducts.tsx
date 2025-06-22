@@ -28,7 +28,7 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-orange-900 mb-4">Featured Products</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-sky-900 mb-4">Featured Products</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Discover our most popular aluminum solutions, trusted by professionals and homeowners alike
           </p>

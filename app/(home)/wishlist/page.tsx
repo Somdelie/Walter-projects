@@ -266,7 +266,7 @@ export default function WishlistPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <Button className="w-full bg-primary hover:bg-orange-700" asChild>
+                  <Button className="w-full bg-primary hover:bg-sky-700" asChild>
                     <Link href="/products">Continue Shopping</Link>
                   </Button>
                 </div>

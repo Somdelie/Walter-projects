@@ -389,7 +389,7 @@ export default function DashboardMain({
                             {order.deliveryMethod === "DELIVERY" ? "🚚 Delivery" : "📦 Collection"}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right font-medium whitespace-nowrap text-orange-700">
+                        <TableCell className="text-right font-medium whitespace-nowrap text-sky-700">
                           {formatPrice(order.total)}
                         </TableCell>
                         <TableCell className="text-right text-sm text-muted-foreground hidden xl:table-cell whitespace-nowrap">

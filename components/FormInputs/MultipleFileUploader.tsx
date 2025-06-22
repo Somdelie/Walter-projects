@@ -48,7 +48,7 @@ export function getFileIcon(extension: string | undefined) {
     case "ppt":
     case "pptx":
       return (
-        <FaFilePowerpoint className="w-6 h-6 flex-shrink-0 mr-2 text-orange-500" />
+        <FaFilePowerpoint className="w-6 h-6 flex-shrink-0 mr-2 text-sky-500" />
       );
     case "zip":
     case "gzip":
