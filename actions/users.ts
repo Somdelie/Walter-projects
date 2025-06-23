@@ -359,6 +359,7 @@ export async function updateUser(id: string, data: UserEditData) {
         isVerfied: !!data.emailVerified, // Convert emailVerified to a boolean
         isAdmin: data.isAdmin,
         image: data.image,
+        roles: data.role ? { connect: { id: data.role } } : undefined,
       },
     });
 

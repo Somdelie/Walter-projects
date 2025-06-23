@@ -45,6 +45,7 @@ export function UserEditForm({ user, onSuccess, trigger }: UserEditFormProps) {
     emailVerified: user.emailVerified,
     isAdmin: user.isAdmin,
     image: user.image || null,
+    role: null, // Replace with a valid property or set to null if not applicable
   })
 
 const handleImageChange = (url: string) => {

@@ -76,15 +76,17 @@ export default function SiteFooter() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-slate-300">
                 <MapPin className="h-5 w-5 text-blue-400 flex-shrink-0" />
-                <span>123 Industrial Avenue, Johannesburg, 2000</span>
+                <span>54 5th street marlboro Sandton</span>
               </div>
-              <div className="flex items-center gap-3 text-slate-300">
+              <div className="flex items-center gap-3 text-orange-600">
                 <Phone className="h-5 w-5 text-blue-400 flex-shrink-0" />
-                <span>+27 11 123 4567</span>
+                <span>+27 11 262 0677</span>
+                <span>+27 62 048 3184</span>
+                <span>+27 82 256 0441</span>
               </div>
               <div className="flex items-center gap-3 text-slate-300">
                 <Mail className="h-5 w-5 text-blue-400 flex-shrink-0" />
-                <span>admin@cautiousndlovu.co.za</span>
+                <span>info@walterprojects.co.za</span>
               </div>
             </div>
 

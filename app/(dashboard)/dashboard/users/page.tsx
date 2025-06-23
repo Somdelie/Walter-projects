@@ -2,9 +2,12 @@ import DataTable from "@/components/DataTableComponents/DataTable";
 import TableHeader from "@/components/dashboard/Tables/TableHeader";
 import { getAllUsers } from "@/actions/users";
 import { columns } from "./user-columns";
+import { getRoles } from "@/actions/roles";
 
 export default async function page() {
   const users = (await getAllUsers()) || [];
+  const roles = await getRoles();
+
   return (
     <div className="p-8">
       <TableHeader

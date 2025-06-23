@@ -32,4 +32,5 @@ export interface UserEditData {
   emailVerified: Date | null;
   isAdmin: boolean;
   image: string | null;
+  role: string | null; // Assuming role is a string ID of the role
 }
