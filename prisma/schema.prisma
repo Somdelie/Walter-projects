@@ -57,35 +57,38 @@ model Role {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  name          String
-  firstName     String
-  lastName      String
-  phone         String         @unique
-  email         String         @unique
-  emailVerified DateTime?
-  image         String?
-  jobTitle      String?
-  roles         Role[]         @relation("UserRoles") // This handles the role relationship
+  id                    String         @id @default(cuid())
+  name                  String
+  firstName             String
+  lastName              String
+  phone                 String         @unique
+  email                 String         @unique
+  emailVerified         DateTime?
+  image                 String?
+  jobTitle              String?
+  roles                 Role[]         @relation("UserRoles") // This handles the role relationship
   // role          UserRole  @default(USER)
-  password      String?
-  status        Boolean        @default(true)
-  accounts      Account[]
-  sessions      Session[]
-  savings       Saving[]
-  blogs         Blog[]
-  isAdmin       Boolean        @default(false)
-  isVerfied     Boolean        @default(false)
-  token         String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  password              String?
+  status                Boolean        @default(true)
+  accounts              Account[]
+  sessions              Session[]
+  savings               Saving[]
+  blogs                 Blog[]
+  isAdmin               Boolean        @default(false)
+  isVerfied             Boolean        @default(false)
+  token                 String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
   // Remove this line:
   // roleId        String?
-  Address       Address[]
-  CartItem      CartItem[]
-  WishlistItem  WishlistItem[]
-  Order         Order[]
-  Review        Review[]
+  Address               Address[]
+  CartItem              CartItem[]
+  WishlistItem          WishlistItem[]
+  Order                 Order[]
+  Review                Review[]
+  Message               Message[]
+  AdminConversations    Conversation[] @relation("AdminConversations")
+  CustomerConversations Conversation[] @relation("CustomerConversations")
 }
 
 model Category {
@@ -512,4 +515,34 @@ model Setting {
 
   @@index([key])
   @@index([group])
+}
+
+model Conversation {
+  id         String    @id @default(cuid())
+  customerId String
+  adminId    String
+  messages   Message[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  customer User @relation("CustomerConversations", fields: [customerId], references: [id])
+  admin    User @relation("AdminConversations", fields: [adminId], references: [id])
+
+  @@index([customerId])
+  @@index([adminId])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  content        String
+  conversationId String
+  senderId       String
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([senderId])
 }

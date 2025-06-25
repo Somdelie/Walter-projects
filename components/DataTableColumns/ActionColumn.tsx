@@ -30,23 +30,34 @@ type ActionColumnProps = {
 
 export function ActionColumn({ row, model, id, onRefetch }: ActionColumnProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const data = row.original
   const displayName = model === "category" ? data.title : data.name
 
   const handleDelete = async () => {
-    if (!id) return
+    setIsDeleting(true)
+    if (!id) {
+      toast.error("Invalid ID provided for deletion");
+      setIsDeleting(false);
+      return;
+    }
 
     try {
       if (model === "category") {
-        await deleteCategoryById(id)
+      const res =  await deleteCategoryById(id)
+        if (!res.success) {
+          setIsDeleting(false)
+          toast.error(res.error || "Failed to delete category")
+        }
       } else if (model === "user") {
         await deleteUser(id)
       }
 
       toast.success(`${model === "category" ? "Category" : "User"} deleted successfully`)
       setDeleteDialogOpen(false)
-      if (onRefetch) onRefetch()
+      setIsDeleting(false)
+      // if (onRefetch) onRefetch()
     } catch (error) {
       toast.error(`Failed to delete ${model}`)
       console.error(`Delete ${model} error:`, error)
@@ -127,6 +138,7 @@ export function ActionColumn({ row, model, id, onRefetch }: ActionColumnProps) {
             This action cannot be undone.
           </>
         }
+        isConfirming={isDeleting}
         onConfirm={handleDelete}
         confirmLabel={`Delete ${model === "category" ? "Category" : "User"}`}
         variant="destructive"

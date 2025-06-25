@@ -140,8 +140,8 @@ export default function SiteHeader({ user }: { user: AuthenticatedUser | null })
 
   const userMenuItems = [
     {
-      label: "My Profile",
-      href: "/profile",
+      label: "Help Center",
+      href: "/messages",
       icon: User,
       adminOnly: false,
     },
