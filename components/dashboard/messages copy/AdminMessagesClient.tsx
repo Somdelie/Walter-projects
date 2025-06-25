@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MessageCircle, Users, TrendingUp } from "lucide-react"
 import { AdminConversationList } from "./AdminConversationList"
-import { AdminWebSocketChatBox } from "./AdminWebSocketChatBox"
+import { AdminChatBox } from "./AdminChatBox"
 
 interface ConversationStats {
   totalConversations: number
@@ -32,7 +32,7 @@ export function AdminMessagesClient({ adminId, initialStats }: AdminMessagesClie
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Stats Header */}
-      <div className="bg-white border-b p-4">
+      <div className=" bg-white border-b">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -79,7 +79,7 @@ export function AdminMessagesClient({ adminId, initialStats }: AdminMessagesClie
         {/* Chat Area */}
         <div className="flex-1 flex flex-col">
           {selectedConversationId ? (
-            <AdminWebSocketChatBox conversationId={selectedConversationId} currentUserId={adminId} />
+            <AdminChatBox conversationId={selectedConversationId} currentUserId={adminId} />
           ) : (
             <div className="flex-1 flex items-center justify-center bg-white">
               <Card className="p-8 text-center max-w-md">

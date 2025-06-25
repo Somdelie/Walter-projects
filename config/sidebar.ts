@@ -61,11 +61,6 @@ export const sidebarLinks: ISidebarLink[] = [
         href: "/dashboard/products/brands",
         permission: "brands.read",
       },
-      {
-        title: "Attributes",
-        href: "/dashboard/products/attributes",
-        permission: "products.update",
-      },
     ],
   },
 

@@ -5,12 +5,7 @@ import { getAdminConversations, markConversationAsRead, getConversationStats } f
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { MessageCircle, Search, Phone, Mail, Calendar, RefreshCw, Plus } from "lucide-react"
-import { CreateConversationDialog } from "@/components/chats/create-conversation-dialog"
-import { ConnectionStatus } from "@/components/connection-status"
-import { createNewConversation } from "@/actions/conversations"
+import { MessageCircle, Search, Phone, Mail, Calendar } from "lucide-react"
 
 interface AdminConversation {
   id: string
@@ -61,16 +56,10 @@ export function AdminConversationList({
   const [conversations, setConversations] = useState<AdminConversation[]>([])
   const [filteredConversations, setFilteredConversations] = useState<AdminConversation[]>([])
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
 
   useEffect(() => {
     loadConversations()
-
-    // Set up polling for real-time updates
-    const interval = setInterval(loadConversations, 30000) // Refresh every 30 seconds
-    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -92,8 +81,7 @@ export function AdminConversationList({
 
   const loadConversations = async () => {
     try {
-      if (!loading) setRefreshing(true)
-
+      setLoading(true)
       const data = await getAdminConversations()
       setConversations(data)
 
@@ -104,7 +92,6 @@ export function AdminConversationList({
       console.error("Failed to load conversations:", error)
     } finally {
       setLoading(false)
-      setRefreshing(false)
     }
   }
 
@@ -126,25 +113,12 @@ export function AdminConversationList({
     }
   }
 
-  const handleNewConversation = async (participantId?: string) => {
-    try {
-      const newConversation = await createNewConversation(participantId)
-      await loadConversations() // Refresh the list
-      onConversationSelect(newConversation.id)
-      setShowCreateDialog(false)
-    } catch (error) {
-      console.error("Failed to create conversation:", error)
-    }
-  }
-
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
 
-    if (diffInHours < 1) {
-      return "Just now"
-    } else if (diffInHours < 24) {
+    if (diffInHours < 24) {
       return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     } else if (diffInHours < 168) {
       return date.toLocaleDateString([], { weekday: "short" })
@@ -188,16 +162,6 @@ export function AdminConversationList({
               unread
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <ConnectionStatus />
-            <Button size="sm" variant="outline" onClick={loadConversations} disabled={refreshing}>
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
-            <Button size="sm" onClick={() => setShowCreateDialog(true)}>
-              <Plus className="w-4 h-4 mr-1" />
-              New
-            </Button>
-          </div>
         </div>
 
         {/* Search */}
@@ -226,11 +190,7 @@ export function AdminConversationList({
               <>
                 <MessageCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg font-medium mb-2">No customer messages</p>
-                <p className="text-sm mb-4">Customer conversations will appear here</p>
-                <Button onClick={() => setShowCreateDialog(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Start New Conversation
-                </Button>
+                <p className="text-sm">Customer conversations will appear here</p>
               </>
             )}
           </div>
@@ -283,12 +243,10 @@ export function AdminConversationList({
                           <Mail className="w-3 h-3" />
                           <span className="truncate max-w-[120px]">{customer.email}</span>
                         </div>
-                        {customer.phone && (
-                          <div className="flex items-center space-x-1">
-                            <Phone className="w-3 h-3" />
-                            <span>{customer.phone}</span>
-                          </div>
-                        )}
+                        <div className="flex items-center space-x-1">
+                          <Phone className="w-3 h-3" />
+                          <span>{customer.phone}</span>
+                        </div>
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-3 h-3" />
                           <span>Since {formatCustomerSince(customer.createdAt)}</span>
@@ -305,13 +263,6 @@ export function AdminConversationList({
                           {conversation.lastMessage.content}
                         </p>
                       )}
-
-                      {/* Priority Badge for urgent conversations */}
-                      {conversation.unreadCount > 5 && (
-                        <Badge variant="destructive" className="mt-2 text-xs">
-                          High Priority
-                        </Badge>
-                      )}
                     </div>
                   </div>
                 </Card>
@@ -320,14 +271,6 @@ export function AdminConversationList({
           </div>
         )}
       </div>
-
-      {/* Create Conversation Dialog */}
-      <CreateConversationDialog
-        open={showCreateDialog}
-        onOpenChange={setShowCreateDialog}
-        onCreateConversation={handleNewConversation}
-        isAdmin={true}
-      />
     </div>
   )
 }

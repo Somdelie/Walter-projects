@@ -92,8 +92,14 @@ export async function GET() {
 // POST - Create new conversation
 export async function POST(request: Request) {
   try {
+    console.log("POST /api/conversations called") // Debug log
+
     const user = await getAuthenticatedUser()
-    const { participantId } = await request.json()
+    const body = await request.json()
+    const { participantId } = body
+
+    console.log("User:", user.id, "isAdmin:", user.isAdmin) // Debug log
+    console.log("ParticipantId:", participantId) // Debug log
 
     let conversation
 
@@ -108,40 +114,36 @@ export async function POST(request: Request) {
               { customerId: user.id, adminId: participantId },
             ],
           },
+          include: {
+            customer: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                image: true,
+              },
+            },
+            admin: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
         })
 
         if (existing) {
-          // Return existing conversation
-          const fullConversation = await db.conversation.findUnique({
-            where: { id: existing.id },
-            include: {
-              customer: {
-                select: {
-                  id: true,
-                  name: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  image: true,
-                },
-              },
-              admin: {
-                select: {
-                  id: true,
-                  name: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  image: true,
-                },
-              },
-            },
-          })
-
-          return NextResponse.json(fullConversation)
+          console.log("Found existing conversation:", existing.id)
+          return NextResponse.json(existing)
         }
 
-        // Create new conversation with specific participant
+        // Get participant details
         const participant = await db.user.findUnique({
           where: { id: participantId },
         })
@@ -150,6 +152,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: "Participant not found" }, { status: 404 })
         }
 
+        // Create new conversation with specific participant
         conversation = await db.conversation.create({
           data: {
             customerId: participant.isAdmin ? user.id : participantId,
@@ -179,15 +182,52 @@ export async function POST(request: Request) {
           },
         })
       } else {
-        // Find a customer to create conversation with
+        // Admin creating general conversation - find a customer
         const customer = await db.user.findFirst({
           where: {
             isAdmin: false,
+            id: {
+              not: user.id,
+            },
           },
         })
 
         if (!customer) {
-          return NextResponse.json({ error: "No customers found" }, { status: 404 })
+          return NextResponse.json({ error: "No customers available" }, { status: 404 })
+        }
+
+        // Check if conversation already exists with this customer
+        const existing = await db.conversation.findFirst({
+          where: {
+            customerId: customer.id,
+            adminId: user.id,
+          },
+          include: {
+            customer: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                image: true,
+              },
+            },
+            admin: {
+              select: {
+                id: true,
+                name: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        })
+
+        if (existing) {
+          return NextResponse.json(existing)
         }
 
         conversation = await db.conversation.create({
@@ -228,7 +268,7 @@ export async function POST(request: Request) {
       })
 
       if (!admin) {
-        return NextResponse.json({ error: "No admin found" }, { status: 404 })
+        return NextResponse.json({ error: "No admin available" }, { status: 404 })
       }
 
       // Check if conversation already exists
@@ -237,36 +277,33 @@ export async function POST(request: Request) {
           customerId: user.id,
           adminId: admin.id,
         },
+        include: {
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              image: true,
+            },
+          },
+          admin: {
+            select: {
+              id: true,
+              name: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
       })
 
       if (existing) {
-        const fullConversation = await db.conversation.findUnique({
-          where: { id: existing.id },
-          include: {
-            customer: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                image: true,
-              },
-            },
-            admin: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
-        })
-
-        return NextResponse.json(fullConversation)
+        console.log("Found existing customer conversation:", existing.id)
+        return NextResponse.json(existing)
       }
 
       conversation = await db.conversation.create({
@@ -299,9 +336,13 @@ export async function POST(request: Request) {
       })
     }
 
+    console.log("Created/found conversation:", conversation.id)
     return NextResponse.json(conversation)
   } catch (error) {
     console.error("Error creating conversation:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 },
+    )
   }
 }

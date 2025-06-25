@@ -141,7 +141,7 @@ export default function SiteHeader({ user }: { user: AuthenticatedUser | null })
   const userMenuItems = [
     {
       label: "Help Center",
-      href: "/messages",
+      href: "/chats",
       icon: User,
       adminOnly: false,
     },
@@ -161,12 +161,6 @@ export default function SiteHeader({ user }: { user: AuthenticatedUser | null })
       label: "My Cart",
       href: "/cart",
       icon: ShoppingCart,
-      adminOnly: false,
-    },
-    {
-      label: "Addresses",
-      href: "/addresses",
-      icon: MapPin,
       adminOnly: false,
     },
     {
@@ -304,13 +298,13 @@ export default function SiteHeader({ user }: { user: AuthenticatedUser | null })
                 </NavigationMenuContent>
               </NavigationMenuItem>
 
-              <NavigationMenuItem>
+              {/* <NavigationMenuItem>
                 <Link href="/contact" legacyBehavior passHref>
                   <NavigationMenuLink className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-blue-50 hover:text-blue-600 focus:bg-blue-50 focus:text-blue-600 focus:outline-none">
                     Contact
                   </NavigationMenuLink>
                 </Link>
-              </NavigationMenuItem>
+              </NavigationMenuItem> */}
             </NavigationMenuList>
           </NavigationMenu>
         </div>

@@ -1,9 +1,17 @@
-import { getAuthenticatedUser } from "@/config/useAuth"
+
 import { getConversationStats } from "@/actions/admin-conversations"
 import { redirect } from "next/navigation"
+import { getAuthenticatedUser } from "@/config/useAuth"
 import { AdminMessagesClient } from "@/components/dashboard/messages/AdminMessagesClient"
 
-export default async function AdminMessagesPage() {
+
+interface ConversationStats {
+  totalConversations: number
+  unreadConversations: number
+  todayMessages: number
+}
+
+export default async function MessagePage() {
   try {
     const user = await getAuthenticatedUser()
 
@@ -14,13 +22,9 @@ export default async function AdminMessagesPage() {
     // Fetch initial stats on the server
     const stats = await getConversationStats()
 
-    return (
-      <div className="h-screen bg-gray-100">
-        <AdminMessagesClient adminId={user.id} initialStats={stats} />
-      </div>
-    )
+    return <AdminMessagesClient adminId={user.id} initialStats={stats} />
   } catch (error) {
     console.error("Authentication error:", error)
-    redirect("/")
+    // redirect("/login")
   }
 }
