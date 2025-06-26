@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -72,6 +72,26 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
     active: 0,
     resolved: 0,
   })
+
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesScrollRef = useRef<HTMLDivElement>(null)
+
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    if (messagesScrollRef.current) {
+      const scrollContainer = messagesScrollRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: "smooth"
+        })
+      }
+    }
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   // Fetch conversations with admin-specific filtering
   const fetchConversations = async () => {
@@ -489,7 +509,7 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4 bg-gray-50">
+            <ScrollArea className="flex-1 p-4 bg-gray-50" ref={messagesScrollRef}>
               <div className="space-y-4">
                 <AnimatePresence>
                   {messages.map((message) => (
@@ -570,6 +590,7 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
                     </motion.div>
                   )}
                 </AnimatePresence>
+                <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 

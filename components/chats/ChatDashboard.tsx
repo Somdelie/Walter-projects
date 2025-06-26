@@ -55,12 +55,21 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesScrollRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const eventSourceRef = useRef<EventSource | null>(null)
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    if (messagesScrollRef.current) {
+      const scrollContainer = messagesScrollRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: "smooth"
+        })
+      }
+    }
   }
 
   useEffect(() => {
@@ -320,11 +329,18 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
     }
   }, [selectedConversation])
 
-  const filteredConversations = conversations.filter(
-    (conv) =>
+  // Fixed filteredConversations with null checks
+  const filteredConversations = conversations.filter((conv) => {
+    // Check if customer and admin exist and have names
+    if (!conv.customer?.name || !conv.admin?.name) {
+      return false
+    }
+    
+    return (
       conv.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      conv.admin.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      conv.admin.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  })
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -424,14 +440,14 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
                   <div className="flex items-start space-x-3">
                     <div className="relative">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage src={isAdmin ? conversation.customer.image : conversation.admin.image} />
+                        <AvatarImage src={isAdmin ? conversation.customer?.image : conversation.admin?.image} />
                         <AvatarFallback>
-                          {isAdmin ? conversation.customer.name.charAt(0) : conversation.admin.name.charAt(0)}
+                          {isAdmin ? conversation.customer?.name?.charAt(0) : conversation.admin?.name?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div
                         className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-white ${
-                          onlineUsers.has(isAdmin ? conversation.customer.id : conversation.admin.id)
+                          onlineUsers.has(isAdmin ? conversation.customer?.id || "" : conversation.admin?.id || "")
                             ? "bg-green-500"
                             : "bg-gray-300"
                         }`}
@@ -441,7 +457,7 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {isAdmin ? conversation.customer.name : conversation.admin.name}
+                          {isAdmin ? conversation.customer?.name || "Unknown Customer" : conversation.admin?.name || "Unknown Admin"}
                         </p>
                         <div className="flex items-center space-x-1">
                           {conversation._count.messages > 0 && (
@@ -453,12 +469,12 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
                         </div>
                       </div>
 
-                      {conversation.messages[0] && (
+                      {conversation.messages?.[0] && (
                         <p className="text-sm text-gray-600 truncate mt-1">{conversation.messages[0].content}</p>
                       )}
 
                       {/* Show typing indicator in conversation list */}
-                      {typingUsers.has(isAdmin ? conversation.customer.id : conversation.admin.id) && (
+                      {typingUsers.has(isAdmin ? conversation.customer?.id || "" : conversation.admin?.id || "") && (
                         <p className="text-xs text-blue-600 italic mt-1">typing...</p>
                       )}
                     </div>
@@ -486,12 +502,12 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
                   <AvatarFallback>
                     {conversations
                       .find((c) => c.id === selectedConversation)
-                      ?.[isAdmin ? "customer" : "admin"]?.name.charAt(0)}
+                      ?.[isAdmin ? "customer" : "admin"]?.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="font-medium text-gray-900">
-                    {conversations.find((c) => c.id === selectedConversation)?.[isAdmin ? "customer" : "admin"]?.name}
+                    {conversations.find((c) => c.id === selectedConversation)?.[isAdmin ? "customer" : "admin"]?.name || "Unknown User"}
                   </h3>
                   <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <div
@@ -519,7 +535,7 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 p-4" ref={messagesScrollRef}>
               <div className="space-y-4">
                 <AnimatePresence>
                   {messages.map((message) => (
