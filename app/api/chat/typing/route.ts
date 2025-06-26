@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { broadcastToConversation } from "../events/route"
+import { broadcastToConversation } from "@/lib/chat-events"
 
 export async function POST(request: NextRequest) {
   try {

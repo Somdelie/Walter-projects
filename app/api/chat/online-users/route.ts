@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getOnlineUsers } from "../events/route"
+import { getOnlineUsers } from "@/lib/chat-events"
 
 export async function GET() {
   try {

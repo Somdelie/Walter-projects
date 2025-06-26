@@ -77,7 +77,7 @@ const AdminProjectsClient = ({ projects }: AdminProjectsClientProps) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4">
+    <div className="">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
@@ -159,7 +159,7 @@ const AdminProjectsClient = ({ projects }: AdminProjectsClientProps) => {
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <AnimatePresence>
           {filteredProjects.map((project) => (
             <motion.div
@@ -193,7 +193,7 @@ const AdminProjectsClient = ({ projects }: AdminProjectsClientProps) => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
-                          <Link href={`/blogs/${project.slug}`}>
+                          <Link href={`/projects/${project.slug}`}>
                             <Eye className="w-4 h-4 mr-2" />
                             View
                           </Link>
@@ -221,11 +221,11 @@ const AdminProjectsClient = ({ projects }: AdminProjectsClientProps) => {
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h3 className="font-semibold text-gray-900 line-clamp-1">{project.name}</h3>
-                    <Badge variant="secondary" className="ml-2">
+                    <Badge variant="secondary" className="ml-2 whitespace-nowrap">
                       {project.imageUrls.length} images
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                  <p className="text-sm text-gray-600 line-clamp-1 mb-3">
                     {project.description || "No description available"}
                   </p>
                   <div className="flex items-center justify-between text-xs text-gray-500">

@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { broadcastToConversation } from "../chat/events/route";
+import { broadcastToConversation } from "@/lib/chat-events";
 import { db } from "@/prisma/db";
-import { revalidatePath } from "next/cache";
 
 export async function GET(request: NextRequest) {
   try {
@@ -71,9 +70,6 @@ export async function POST(request: NextRequest) {
       message,
       conversationId,
     });
-
-    revalidatePath("/chats");
-    revalidatePath("/dashboard/reports/messages");
 
     return NextResponse.json(message);
   } catch (error) {
