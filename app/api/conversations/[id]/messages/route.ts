@@ -1,60 +1,26 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/prisma/db";
-import { getAuthenticatedUser } from "@/config/useAuth";
 
-// GET - Fetch messages for a conversation
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getAuthenticatedUser();
-    const conversationId = params.id;
-
-    // Verify user has access to this conversation
-    const conversation = await db.conversation.findFirst({
-      where: {
-        id: conversationId,
-        OR: [{ customerId: user.id }, { adminId: user.id }],
-      },
-    });
-
-    if (!conversation) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const { id } = await params;
 
     const messages = await db.message.findMany({
-      where: {
-        conversationId,
-      },
+      where: { conversationId: id },
       include: {
         sender: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-          },
+          select: { id: true, name: true, image: true, isAdmin: true },
         },
       },
-      orderBy: {
-        createdAt: "asc",
-      },
+      orderBy: { createdAt: "asc" },
     });
 
-    const transformedMessages = messages.map((msg) => ({
-      id: msg.id,
-      content: msg.content,
-      senderId: msg.senderId,
-      conversationId: msg.conversationId,
-      createdAt: msg.createdAt.toISOString(),
-      isRead: msg.isRead,
-      sender: msg.sender,
-    }));
-
-    return NextResponse.json(transformedMessages);
+    return NextResponse.json(messages);
   } catch (error) {
-    console.error("Error fetching messages:", error);
+    console.error("Error fetching conversation messages:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -62,74 +28,43 @@ export async function GET(
   }
 }
 
-// POST - Send a new message
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getAuthenticatedUser();
-    const conversationId = params.id;
-    const { content } = await request.json();
+    const { id: conversationId } = await params;
+    const { content, senderId } = await request.json();
 
-    if (!content?.trim()) {
+    if (!content || !senderId) {
       return NextResponse.json(
-        { error: "Message content required" },
+        { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Verify user has access to this conversation
-    const conversation = await db.conversation.findFirst({
-      where: {
-        id: conversationId,
-        OR: [{ customerId: user.id }, { adminId: user.id }],
-      },
-    });
-
-    if (!conversation) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
-
-    // Create the message
     const message = await db.message.create({
       data: {
-        content: content.trim(),
-        senderId: user.id,
+        content,
         conversationId,
-        isRead: false,
+        senderId,
       },
       include: {
         sender: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-          },
+          select: { id: true, name: true, image: true, isAdmin: true },
         },
       },
     });
 
-    // Update conversation's updatedAt
+    // Update conversation timestamp
     await db.conversation.update({
       where: { id: conversationId },
       data: { updatedAt: new Date() },
     });
 
-    const transformedMessage = {
-      id: message.id,
-      content: message.content,
-      senderId: message.senderId,
-      conversationId: message.conversationId,
-      createdAt: message.createdAt.toISOString(),
-      isRead: message.isRead,
-      sender: message.sender,
-    };
-
-    return NextResponse.json(transformedMessage);
+    return NextResponse.json(message);
   } catch (error) {
-    console.error("Error sending message:", error);
+    console.error("Error creating message:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

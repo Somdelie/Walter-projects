@@ -1,307 +1,74 @@
-import { NextResponse } from "next/server"
-import { db } from "@/prisma/db"
-import { getAuthenticatedUser } from "@/config/useAuth"
+import { type NextRequest, NextResponse } from "next/server";
+import { db } from "@/prisma/db";
 
-// GET - Fetch user's conversations
-export async function GET() {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const user = await getAuthenticatedUser()
+    const { id } = await params;
 
-    const conversations = await db.conversation.findMany({
-      where: {
-        OR: [{ customerId: user.id }, { adminId: user.id }],
-      },
+    const conversation = await db.conversation.findUnique({
+      where: { id },
       include: {
         customer: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            image: true,
-          },
+          select: { id: true, name: true, image: true, email: true },
         },
         admin: {
-          select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            image: true,
-          },
+          select: { id: true, name: true, image: true },
         },
         messages: {
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
+          orderBy: { createdAt: "desc" },
+          take: 10,
           include: {
             sender: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-          },
-        },
-        _count: {
-          select: {
-            messages: {
-              where: {
-                isRead: false,
-                senderId: {
-                  not: user.id,
-                },
-              },
+              select: { id: true, name: true, image: true },
             },
           },
         },
       },
-      orderBy: {
-        updatedAt: "desc",
-      },
-    })
+    });
 
-    const transformedConversations = conversations.map((conv) => ({
-      id: conv.id,
-      customer: conv.customer,
-      admin: conv.admin,
-      lastMessage: conv.messages[0]
-        ? {
-            id: conv.messages[0].id,
-            content: conv.messages[0].content,
-            createdAt: conv.messages[0].createdAt.toISOString(),
-            sender: conv.messages[0].sender,
-          }
-        : null,
-      unreadCount: conv._count.messages,
-      updatedAt: conv.updatedAt.toISOString(),
-    }))
+    if (!conversation) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 }
+      );
+    }
 
-    return NextResponse.json(transformedConversations)
+    return NextResponse.json(conversation);
   } catch (error) {
-    console.error("Error fetching conversations:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Error fetching conversation:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
-// POST - Create new conversation
-export async function POST(request: Request) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const user = await getAuthenticatedUser()
-    const { participantId } = await request.json()
+    const { id } = await params;
 
-    let conversation
+    // Delete all messages in the conversation first
+    await db.message.deleteMany({
+      where: { conversationId: id },
+    });
 
-    if (user.isAdmin) {
-      // Admin creating conversation
-      if (participantId) {
-        // Check if conversation already exists
-        const existing = await db.conversation.findFirst({
-          where: {
-            OR: [
-              { customerId: participantId, adminId: user.id },
-              { customerId: user.id, adminId: participantId },
-            ],
-          },
-        })
+    // Then delete the conversation
+    await db.conversation.delete({
+      where: { id },
+    });
 
-        if (existing) {
-          // Return existing conversation
-          const fullConversation = await db.conversation.findUnique({
-            where: { id: existing.id },
-            include: {
-              customer: {
-                select: {
-                  id: true,
-                  name: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  image: true,
-                },
-              },
-              admin: {
-                select: {
-                  id: true,
-                  name: true,
-                  firstName: true,
-                  lastName: true,
-                  email: true,
-                  image: true,
-                },
-              },
-            },
-          })
-
-          return NextResponse.json(fullConversation)
-        }
-
-        // Create new conversation with specific participant
-        const participant = await db.user.findUnique({
-          where: { id: participantId },
-        })
-
-        if (!participant) {
-          return NextResponse.json({ error: "Participant not found" }, { status: 404 })
-        }
-
-        conversation = await db.conversation.create({
-          data: {
-            customerId: participant.isAdmin ? user.id : participantId,
-            adminId: participant.isAdmin ? participantId : user.id,
-          },
-          include: {
-            customer: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                image: true,
-              },
-            },
-            admin: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
-        })
-      } else {
-        // Find a customer to create conversation with
-        const customer = await db.user.findFirst({
-          where: {
-            isAdmin: false,
-          },
-        })
-
-        if (!customer) {
-          return NextResponse.json({ error: "No customers found" }, { status: 404 })
-        }
-
-        conversation = await db.conversation.create({
-          data: {
-            customerId: customer.id,
-            adminId: user.id,
-          },
-          include: {
-            customer: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                image: true,
-              },
-            },
-            admin: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
-        })
-      }
-    } else {
-      // Customer creating conversation with admin
-      const admin = await db.user.findFirst({
-        where: {
-          isAdmin: true,
-        },
-      })
-
-      if (!admin) {
-        return NextResponse.json({ error: "No admin found" }, { status: 404 })
-      }
-
-      // Check if conversation already exists
-      const existing = await db.conversation.findFirst({
-        where: {
-          customerId: user.id,
-          adminId: admin.id,
-        },
-      })
-
-      if (existing) {
-        const fullConversation = await db.conversation.findUnique({
-          where: { id: existing.id },
-          include: {
-            customer: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                image: true,
-              },
-            },
-            admin: {
-              select: {
-                id: true,
-                name: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                image: true,
-              },
-            },
-          },
-        })
-
-        return NextResponse.json(fullConversation)
-      }
-
-      conversation = await db.conversation.create({
-        data: {
-          customerId: user.id,
-          adminId: admin.id,
-        },
-        include: {
-          customer: {
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              image: true,
-            },
-          },
-          admin: {
-            select: {
-              id: true,
-              name: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              image: true,
-            },
-          },
-        },
-      })
-    }
-
-    return NextResponse.json(conversation)
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error creating conversation:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Error deleting conversation:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
