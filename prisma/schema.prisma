@@ -73,7 +73,6 @@ model User {
   accounts              Account[]
   sessions              Session[]
   savings               Saving[]
-  blogs                 Blog[]
   isAdmin               Boolean        @default(false)
   isVerfied             Boolean        @default(false)
   token                 String?
@@ -112,15 +111,6 @@ model Saving {
   paymentDate DateTime  @default(now())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
-}
-
-model BlogCategory {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  slug      String   @unique
-  blogs     Blog[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 // Address Management
@@ -478,32 +468,6 @@ model Review {
   @@index([rating])
 }
 
-// Blog (keep for content marketing)
-model Blog {
-  id            String       @id @default(cuid())
-  title         String
-  slug          String       @unique
-  description   String?      @db.Text
-  thumbnail     String?
-  content       String?      @db.Text
-  published     Boolean?     @default(false)
-  featured      Boolean?     @default(false)
-  author        User         @relation(fields: [authorId], references: [id])
-  authorId      String
-  authorName    String
-  authorImage   String?
-  authorTitle   String?
-  category      BlogCategory @relation(fields: [categoryId], references: [id])
-  categoryId    String
-  categoryTitle String
-  readingTime   Int?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-
-  @@index([slug])
-  @@index([published])
-}
-
 // Settings & Configuration
 model Setting {
   id        String   @id @default(cuid())
@@ -545,4 +509,16 @@ model Message {
 
   @@index([conversationId])
   @@index([senderId])
+}
+
+//projects schema
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  thumbnail   String?
+  imageUrls   String[]
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
 }

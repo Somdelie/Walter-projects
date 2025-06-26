@@ -1,26 +1,24 @@
-import { getAuthenticatedUser } from "@/config/useAuth"
-import { getConversationStats } from "@/actions/admin-conversations"
-import { redirect } from "next/navigation"
-import { AdminMessagesClient } from "@/components/dashboard/messages/AdminMessagesClient"
 
-export default async function AdminMessagesPage() {
+import AdminChatDashboard from "@/components/dashboard/chat/AdminChatDashboard"
+import { getAuthenticatedUser } from "@/config/useAuth"
+import { redirect } from "next/navigation"
+
+export default async function AdminChatPage() {
   try {
     const user = await getAuthenticatedUser()
 
+    // Only allow admins
     if (!user.isAdmin) {
-      redirect("/unauthorized")
+      redirect("/chat")
     }
 
-    // Fetch initial stats on the server
-    const stats = await getConversationStats()
-
     return (
-      <div className="h-screen bg-gray-100">
-        <AdminMessagesClient adminId={user.id} initialStats={stats} />
+      <div className="h-screen bg-gray-50">
+        <AdminChatDashboard currentUserId={user.id} />
       </div>
     )
   } catch (error) {
-    console.error("Authentication error:", error)
+    console.error("Admin chat page error:", error)
     redirect("/")
   }
 }

@@ -1,30 +1,15 @@
-import { NextResponse } from "next/server"
-import { db } from "@/prisma/db"
-import { getAuthenticatedUser } from "@/config/useAuth"
+import { type NextRequest, NextResponse } from "next/server";
+import { db } from "@/prisma/db";
+import { getAuthenticatedUser } from "@/config/useAuth";
 
+// GET - Fetch messages for a conversation
 export async function GET(
-  request: Request,
-  {
-    params,
-  }: {
-    params: Promise<{ id: string }>
-  },
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   try {
-    console.log("API: Starting message fetch request")
-
-    const conversationId = (await params).id
-    console.log(`API: Conversation ID: ${conversationId}`)
-
-    // Check if user is authenticated
-    let user
-    try {
-      user = await getAuthenticatedUser()
-      console.log(`API: Authenticated user: ${user.id}`)
-    } catch (authError) {
-      console.error("API: Authentication failed:", authError)
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
-    }
+    const user = await getAuthenticatedUser();
+    const conversationId = params.id;
 
     // Verify user has access to this conversation
     const conversation = await db.conversation.findFirst({
@@ -32,22 +17,15 @@ export async function GET(
         id: conversationId,
         OR: [{ customerId: user.id }, { adminId: user.id }],
       },
-    })
+    });
 
     if (!conversation) {
-      console.log(`API: Conversation not found or access denied for user ${user.id}`)
-      return NextResponse.json({ error: "Conversation not found or access denied" }, { status: 404 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    console.log(`API: Found conversation, fetching messages...`)
-
-    // Fetch messages for this conversation
     const messages = await db.message.findMany({
       where: {
-        conversationId: conversationId,
-      },
-      orderBy: {
-        createdAt: "asc",
+        conversationId,
       },
       include: {
         sender: {
@@ -59,12 +37,87 @@ export async function GET(
           },
         },
       },
-    })
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
 
-    console.log(`API: Found ${messages.length} messages`)
+    const transformedMessages = messages.map((msg) => ({
+      id: msg.id,
+      content: msg.content,
+      senderId: msg.senderId,
+      conversationId: msg.conversationId,
+      createdAt: msg.createdAt.toISOString(),
+      isRead: msg.isRead,
+      sender: msg.sender,
+    }));
 
-    // Transform messages to include sender info
-    const transformedMessages = messages.map((message) => ({
+    return NextResponse.json(transformedMessages);
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Send a new message
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await getAuthenticatedUser();
+    const conversationId = params.id;
+    const { content } = await request.json();
+
+    if (!content?.trim()) {
+      return NextResponse.json(
+        { error: "Message content required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify user has access to this conversation
+    const conversation = await db.conversation.findFirst({
+      where: {
+        id: conversationId,
+        OR: [{ customerId: user.id }, { adminId: user.id }],
+      },
+    });
+
+    if (!conversation) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    // Create the message
+    const message = await db.message.create({
+      data: {
+        content: content.trim(),
+        senderId: user.id,
+        conversationId,
+        isRead: false,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    // Update conversation's updatedAt
+    await db.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    const transformedMessage = {
       id: message.id,
       content: message.content,
       senderId: message.senderId,
@@ -72,18 +125,14 @@ export async function GET(
       createdAt: message.createdAt.toISOString(),
       isRead: message.isRead,
       sender: message.sender,
-    }))
+    };
 
-    console.log(`API: Returning ${transformedMessages.length} transformed messages`)
-    return NextResponse.json(transformedMessages)
+    return NextResponse.json(transformedMessage);
   } catch (error) {
-    console.error("API: Error fetching messages:", error)
+    console.error("Error sending message:", error);
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

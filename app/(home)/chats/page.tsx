@@ -1,4 +1,4 @@
-import { ChatDashboard } from "@/components/chats/ChatDashboard"
+import ChatDashboard from "@/components/chats/ChatDashboard"
 import { getAuthenticatedUser } from "@/config/useAuth"
 import { redirect } from "next/navigation"
 

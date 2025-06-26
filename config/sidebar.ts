@@ -124,31 +124,6 @@ export const sidebarLinks: ISidebarLink[] = [
     ],
   },
 
-  // Customer Management
-  {
-    title: "Customers",
-    icon: Users,
-    permission: "customers.read",
-    dropdown: true,
-    dropdownMenu: [
-      {
-        title: "All Customers",
-        href: "/dashboard/customers",
-        permission: "customers.read",
-      },
-      {
-        title: "Customer Orders",
-        href: "/dashboard/customers/orders",
-        permission: "customers.read",
-      },
-      {
-        title: "Customer Addresses",
-        href: "/dashboard/customers/addresses",
-        permission: "customers.read",
-      },
-    ],
-  },
-
   // Payments & Finance
   {
     title: "Payments",
@@ -254,32 +229,22 @@ export const sidebarLinks: ISidebarLink[] = [
     ],
   },
 
-  // Content Management
+  // projects Management
   {
-    title: "Content",
+    title: "Projects",
     icon: FileText,
     permission: "blogs.read",
     dropdown: true,
     dropdownMenu: [
       {
-        title: "Blog Posts",
-        href: "/dashboard/content/blogs",
+        title: "Our Projects",
+        href: "/dashboard/blogs",
         permission: "blogs.read",
       },
       {
-        title: "Create Post",
-        href: "/dashboard/content/blogs/create",
+        title: "Add New Project",
+        href: "/dashboard/projects/create",
         permission: "blogs.create",
-      },
-      {
-        title: "Blog Categories",
-        href: "/dashboard/content/categories",
-        permission: "blogs.read",
-      },
-      {
-        title: "Pages",
-        href: "/dashboard/content/pages",
-        permission: "blogs.read",
       },
     ],
   },

@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { MessageCircle } from "lucide-react"
 import { ConversationList } from "@/components/frontend/messages/ConversationList"
-import { ChatBox } from "@/components/frontend/messages/ChatBox"
 
 interface MessagesComponentProps {
   currentUserId: string
@@ -28,7 +27,7 @@ export function MessagesComponent({ currentUserId }: MessagesComponentProps) {
         />
       </div>
 
-      {/* Chat Area */}
+      {/* Chat Area
       <div className="flex-1 flex flex-col">
         {selectedConversationId ? (
           <ChatBox initialConversationId={selectedConversationId} currentUserId={currentUserId}/>
@@ -41,7 +40,7 @@ export function MessagesComponent({ currentUserId }: MessagesComponentProps) {
             </Card>
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   )
 }
