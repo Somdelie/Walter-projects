@@ -1,16 +1,18 @@
 "use client"
 
 import { useState } from "react"
+import { useFormStatus } from "react-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
-import { Plus, X, Upload, ImageIcon } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
+import { Upload, ImageIcon } from "lucide-react"
+import { ImageInput } from "@/components/FormInputs/ImageInput"
+import ProjectMultipleImageInput from "@/components/FormInputs/ProjectMultipleImageInput"
 import { createProject, updateProject } from "@/actions/project-actions"
-import toast from "react-hot-toast"
+import { toast } from "sonner"
 
 interface Project {
   id: string
@@ -27,19 +29,43 @@ interface ProjectFormProps {
   project?: Project
 }
 
+// Separate submit button component to use useFormStatus
+function SubmitButton({ project }: { project?: Project }) {
+  const { pending } = useFormStatus()
+
+  return (
+    <Button type="submit" disabled={pending} className="flex-1 sm:flex-none">
+      {pending ? (
+        <>
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+          {project ? "Updating..." : "Creating..."}
+        </>
+      ) : (
+        <>
+          <Upload className="w-4 h-4 mr-2" />
+          {project ? "Update Project" : "Create Project"}
+        </>
+      )}
+    </Button>
+  )
+}
+
 const ProjectForm = ({ project }: ProjectFormProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+  const [imageUrl, setImageUrl] = useState(project?.thumbnail || "")
   const [imageUrls, setImageUrls] = useState<string[]>(project?.imageUrls || [])
-  const [newImageUrl, setNewImageUrl] = useState("")
   const router = useRouter()
 
   const handleSubmit = async (formData: FormData) => {
-    setIsSubmitting(true)
     setError("")
 
     try {
-      // Add image URLs to form data
+      // Add thumbnail image to form data
+      if (imageUrl) {
+        formData.append("thumbnail", imageUrl)
+      }
+
+      // Add additional images to form data
       imageUrls.forEach((url) => {
         formData.append("imageUrls", url)
       })
@@ -54,25 +80,16 @@ const ProjectForm = ({ project }: ProjectFormProps) => {
       if (result.error) {
         setError(result.error)
       } else {
-        // router.push("/admin/projects")
-        toast.success('Project has been added successfully')
+        toast.success("Project has been added successfully💐")
+        router.push("/dashboard/blogs")
       }
     } catch (error) {
       setError("An unexpected error occurred")
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
-  const addImageUrl = () => {
-    if (newImageUrl.trim() && !imageUrls.includes(newImageUrl.trim())) {
-      setImageUrls([...imageUrls, newImageUrl.trim()])
-      setNewImageUrl("")
-    }
-  }
-
-  const removeImageUrl = (index: number) => {
-    setImageUrls(imageUrls.filter((_, i) => i !== index))
+  const handleImageChange = (url: string) => {
+    setImageUrl(url)
   }
 
   return (
@@ -110,99 +127,49 @@ const ProjectForm = ({ project }: ProjectFormProps) => {
             />
           </div>
 
-          {/* Thumbnail */}
-          <div className="space-y-2">
-            <Label htmlFor="thumbnail">Thumbnail Image URL</Label>
-            <Input
-              id="thumbnail"
-              name="thumbnail"
-              type="url"
-              defaultValue={project?.thumbnail || ""}
-              placeholder="https://example.com/image.jpg"
-            />
-            <p className="text-sm text-gray-500">Optional: Add a main thumbnail image for your project</p>
+          {/* Thumbnail Image */}
+          <div className="space-y-4">
+            <Label>Project Thumbnail</Label>
+            <div className="flex flex-col space-y-3 px-4 items-center w-full border-2 border-dashed border-blue-300 rounded-lg p-6">
+              {imageUrl && (
+                <div className="relative group w-full flex justify-center items-center">
+                  <img
+                    src={imageUrl || "/placeholder.svg"}
+                    alt="Project thumbnail"
+                    className="w-32 h-32 object-cover rounded-lg border shadow-sm"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg"
+                    }}
+                  />
+                </div>
+              )}
+
+              <ImageInput title="" imageUrl={imageUrl} setImageUrl={handleImageChange} endpoint="projectImage" />
+              <p className="text-xs text-muted-foreground text-center">
+                Upload a high quality thumbnail image for your project. JPG, PNG, and WebP formats supported (max 1MB).
+              </p>
+            </div>
           </div>
 
           {/* Additional Images */}
           <div className="space-y-4">
-            <Label>Additional Images</Label>
-
-            {/* Add new image URL */}
-            <div className="flex gap-2">
-              <Input
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                placeholder="https://example.com/image.jpg"
-                type="url"
-              />
-              <Button type="button" onClick={addImageUrl} disabled={!newImageUrl.trim()} variant="outline">
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-
-            {/* Display added images */}
-            <AnimatePresence>
-              {imageUrls.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Added Images ({imageUrls.length})</p>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {imageUrls.map((url, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
-                        className="flex items-center gap-2 p-2 bg-gray-50 rounded-md"
-                      >
-                        <div className="w-12 h-12 bg-gray-200 rounded overflow-hidden flex-shrink-0">
-                          <img
-                            src={url || "/placeholder.svg"}
-                            alt={`Image ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.style.display = "none"
-                              target.nextElementSibling?.classList.remove("hidden")
-                            }}
-                          />
-                          <div className="hidden w-full h-full md:flex items-center justify-center">
-                            <ImageIcon className="w-4 h-4 text-gray-400" />
-                          </div>
-                        </div>
-                        <p className="text-sm text-gray-600 flex-1 truncate">{url}</p>
-                        <Button
-                          type="button"
-                          onClick={() => removeImageUrl(index)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </AnimatePresence>
+            <Label>Additional Project Images</Label>
+            <ProjectMultipleImageInput
+              title=""
+              imageUrls={imageUrls}
+              setImageUrls={setImageUrls}
+              endpoint="projectImages"
+              projectId={project?.id || "new-project"}
+            />
+            <p className="text-xs text-muted-foreground">
+              Upload additional images to showcase your project from different angles. Up to 10 images allowed.
+            </p>
           </div>
 
           {/* Submit Buttons */}
           <div className="flex gap-4 pt-6">
-            <Button type="submit" disabled={isSubmitting} className="flex-1 sm:flex-none">
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                  {project ? "Updating..." : "Creating..."}
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 mr-2" />
-                  {project ? "Update Project" : "Create Project"}
-                </>
-              )}
-            </Button>
-            <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>
+            <SubmitButton project={project} />
+            <Button type="button" variant="outline" onClick={() => router.back()}>
               Cancel
             </Button>
           </div>

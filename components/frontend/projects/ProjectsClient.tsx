@@ -41,15 +41,13 @@ const ProjectsClient = ({ projects }: ProjectsClientProps) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4">
+    <div className="max-w-[90%] mx-auto py-8 px-4">
       {/* Hero Section */}
-      <div className="text-center mb-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Our Projects</h1>
-          <p className="text-xl text-gray-600 mb-8">Discover our latest work and creative solutions</p>
+      <div className="text-center mb-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-[90%] mx-auto">
 
           {/* Search */}
-          <div className="relative max-w-md mx-auto">
+          <div className="relative max-w-[100%] mx-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
               placeholder="Search projects..."
@@ -62,7 +60,7 @@ const ProjectsClient = ({ projects }: ProjectsClientProps) => {
       </div>
 
       {/* Stats */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
@@ -97,10 +95,10 @@ const ProjectsClient = ({ projects }: ProjectsClientProps) => {
             <p className="text-gray-600">Latest Year</p>
           </CardContent>
         </Card>
-      </motion.div>
+      </motion.div> */}
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <AnimatePresence>
           {filteredProjects.map((project, index) => (
             <motion.div
@@ -134,10 +132,10 @@ const ProjectsClient = ({ projects }: ProjectsClientProps) => {
                     </div>
                   </div>
                   <CardContent className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
                       {project.name}
                     </h3>
-                    <p className="text-gray-600 line-clamp-3 mb-4">
+                    <p className="text-gray-600 line-clamp-1 mb-4">
                       {project.description || "No description available"}
                     </p>
                     <div className="flex items-center justify-between text-sm text-gray-500">
