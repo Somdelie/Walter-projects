@@ -1,10 +1,6 @@
-export interface Role {
-  id: string;
-  //   name: string;
-  displayName: string;
-  permissions: string[];
-}
+import type { Role as PrismaRole } from "@prisma/client";
 
+// Extended User type that includes the role property
 export interface User {
   id: string;
   name: string;
@@ -15,7 +11,7 @@ export interface User {
   emailVerified: Date | null;
   image: string | null;
   jobTitle: string | null;
-  roles: Role[];
+  roles: PrismaRole[];
   password: string | null;
   status: boolean;
   isAdmin: boolean;
@@ -23,6 +19,7 @@ export interface User {
   token: string | null;
   createdAt: Date;
   updatedAt: Date;
+  role: string | null; // Add this property for the current role ID
 }
 
 // For the edit form - only the fields admin can edit
@@ -32,5 +29,5 @@ export interface UserEditData {
   emailVerified: Date | null;
   isAdmin: boolean;
   image: string | null;
-  role: string | null; // Assuming role is a string ID of the role
+  role: string | null; // Role ID
 }

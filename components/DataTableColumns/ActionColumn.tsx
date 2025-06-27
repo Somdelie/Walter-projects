@@ -18,17 +18,20 @@ import { EditCategoryForm } from "../Forms/CategoryEditForm"
 import { deleteCategoryById } from "@/actions/categories"
 import { deleteUser } from "@/actions/users"
 import { UserEditForm } from "@/app/(dashboard)/dashboard/users/user-edit-form"
+import { Role } from "@prisma/client"
 
 type ModelType = "user" | "category" | "role"
+
 
 type ActionColumnProps = {
   row: any
   model: ModelType
   id?: string
+  roles?: Role[] // Add roles prop for user model
   onRefetch?: () => void
 }
 
-export function ActionColumn({ row, model, id, onRefetch }: ActionColumnProps) {
+export function ActionColumn({ row, model, id, roles, onRefetch }: ActionColumnProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -45,10 +48,11 @@ export function ActionColumn({ row, model, id, onRefetch }: ActionColumnProps) {
 
     try {
       if (model === "category") {
-      const res =  await deleteCategoryById(id)
+        const res = await deleteCategoryById(id)
         if (!res.success) {
           setIsDeleting(false)
           toast.error(res.error || "Failed to delete category")
+          return
         }
       } else if (model === "user") {
         await deleteUser(id)
@@ -57,10 +61,11 @@ export function ActionColumn({ row, model, id, onRefetch }: ActionColumnProps) {
       toast.success(`${model === "category" ? "Category" : "User"} deleted successfully`)
       setDeleteDialogOpen(false)
       setIsDeleting(false)
-      // if (onRefetch) onRefetch()
+      if (onRefetch) onRefetch()
     } catch (error) {
       toast.error(`Failed to delete ${model}`)
       console.error(`Delete ${model} error:`, error)
+      setIsDeleting(false)
     }
   }
 
@@ -87,6 +92,7 @@ export function ActionColumn({ row, model, id, onRefetch }: ActionColumnProps) {
         <DropdownMenuItem asChild>
           <UserEditForm
             user={data}
+            roles={roles || []} // Pass roles or empty array as fallback
             onSuccess={onRefetch}
             trigger={
               <div className="flex items-center w-full px-2 py-1.5 text-sm cursor-pointer hover:bg-accent">

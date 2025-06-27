@@ -3,13 +3,15 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, XCircle, Shield } from "lucide-react"
-import { ColumnDef } from "@tanstack/react-table"
-import { User } from "@/types/user"
+import type { ColumnDef } from "@tanstack/react-table"
+import type { User } from "@/types/user"
 import ImageColumn from "@/components/DataTableColumns/ImageColumn"
 import SortableColumn from "@/components/DataTableColumns/SortableColumn"
 import { ActionColumn } from "@/components/DataTableColumns/ActionColumn"
+import type { Role } from "@prisma/client"
 
-export const columns: ColumnDef<User>[] = [
+// Create a function that returns columns with roles data
+export const createColumns = (roles: Role[]): ColumnDef<User>[] => [
   {
     id: "select",
     header: ({ table }) => (
@@ -77,6 +79,26 @@ export const columns: ColumnDef<User>[] = [
     header: ({ column }) => <SortableColumn column={column} title="Phone" />,
   },
   {
+    accessorKey: "role",
+    header: ({ column }) => <SortableColumn column={column} title="Role" />,
+    cell: ({ row }) => {
+      const user = row.original
+      const userRole = roles.find((role) => role.id === user.role)
+
+      return (
+        <div>
+          {userRole ? (
+            <Badge variant="outline" className="font-normal">
+              {userRole.roleName}
+            </Badge>
+          ) : (
+            <span className="text-sm text-muted-foreground">No role assigned</span>
+          )}
+        </div>
+      )
+    },
+  },
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
@@ -97,9 +119,7 @@ export const columns: ColumnDef<User>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      return <ActionColumn row={row} model="user" id={row.original.id} />
-
-
+      return <ActionColumn row={row} model="user" id={row.original.id} roles={roles} />
     },
   },
 ]
