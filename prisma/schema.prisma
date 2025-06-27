@@ -91,14 +91,22 @@ model User {
 }
 
 model Category {
-  id          String    @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
-  slug        String    @unique
+  slug        String  @unique
   imageUrl    String?
   description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime? @updatedAt
-  Product     Product[]
+
+  // Self-referential relationship for subcategories
+  parentId      String?
+  parent        Category?  @relation("CategorySubcategories", fields: [parentId], references: [id], onDelete: Cascade)
+  subcategories Category[] @relation("CategorySubcategories")
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  Product   Product[]
+
+  @@index([parentId])
 }
 
 model Saving {

@@ -1,19 +1,32 @@
-// actions/categories.ts
 "use server";
 
-import { CategoryCreateData, CategoryMutationData } from "@/types/category";
+import type {
+  CategoryCreateData,
+  CategoryMutationData,
+} from "@/types/category";
 import { generateSlug } from "@/lib/generateSlug";
 import { revalidatePath } from "next/cache";
 import { db } from "@/prisma/db";
 
-// Get all categories with their relationships
+// Get all categories with their relationships including subcategories
 export async function getCategories() {
   try {
     const categories = await db.category.findMany({
       include: {
+        parent: true,
+        subcategories: {
+          include: {
+            _count: {
+              select: {
+                Product: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             Product: true,
+            subcategories: true,
           },
         },
       },
@@ -33,15 +46,54 @@ export async function getCategories() {
   }
 }
 
+// Get parent categories only (for dropdown selection)
+export async function getParentCategories() {
+  try {
+    const categories = await db.category.findMany({
+      where: {
+        parentId: null, // Only get parent categories
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+      },
+      orderBy: [{ title: "asc" }],
+    });
+
+    return {
+      data: categories,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Error fetching parent categories:", error);
+    return {
+      data: [],
+      error: "Failed to fetch parent categories",
+    };
+  }
+}
+
 // Get single category by ID
 export async function getCategoryById(id: string) {
   try {
     const category = await db.category.findUnique({
       where: { id },
       include: {
+        parent: true,
+        subcategories: {
+          include: {
+            _count: {
+              select: {
+                Product: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             Product: true,
+            subcategories: true,
           },
         },
       },
@@ -61,10 +113,11 @@ export async function getCategoryById(id: string) {
 }
 
 // Create new category
-//create a new category
-export async function createCategory(data: CategoryCreateData) {
+export async function createCategory(
+  data: CategoryCreateData & { parentId?: string }
+) {
   try {
-    // Check if the brand already exists
+    // Check if the category already exists
     const existingCategory = await db.category.findFirst({
       where: {
         slug: data.slug,
@@ -78,9 +131,42 @@ export async function createCategory(data: CategoryCreateData) {
         error: "",
       };
     }
+
+    // If parentId is provided, verify the parent exists
+    if (data.parentId) {
+      const parentCategory = await db.category.findUnique({
+        where: { id: data.parentId },
+      });
+
+      if (!parentCategory) {
+        return {
+          status: 400,
+          message: "Parent category not found",
+          data: null,
+          error: "",
+        };
+      }
+    }
+
     const category = await db.category.create({
-      data,
+      data: {
+        title: data.title,
+        slug: data.slug,
+        imageUrl: data.imageUrl,
+        description: data.description,
+        parentId: data.parentId || null,
+      },
+      include: {
+        parent: true,
+        _count: {
+          select: {
+            Product: true,
+            subcategories: true,
+          },
+        },
+      },
     });
+
     revalidatePath("/dashboard/products/categories");
     return {
       status: 200,
@@ -89,14 +175,19 @@ export async function createCategory(data: CategoryCreateData) {
     };
   } catch (error) {
     console.log(error);
-    return null;
+    return {
+      status: 500,
+      message: "Failed to create category",
+      data: null,
+      error: error,
+    };
   }
 }
 
 // Update category
 export async function updateCategoryById(
   id: string,
-  data: CategoryMutationData
+  data: CategoryMutationData & { parentId?: string }
 ) {
   try {
     // Check if category exists
@@ -109,6 +200,47 @@ export async function updateCategoryById(
         data: null,
         error: "Category not found",
       };
+    }
+
+    // Prevent circular reference (category can't be its own parent or child)
+    if (data.parentId === id) {
+      return {
+        data: null,
+        error: "Category cannot be its own parent",
+      };
+    }
+
+    // Check if the new parent would create a circular reference
+    if (data.parentId) {
+      const parentCategory = await db.category.findUnique({
+        where: { id: data.parentId },
+        include: {
+          parent: true,
+        },
+      });
+
+      if (!parentCategory) {
+        return {
+          data: null,
+          error: "Parent category not found",
+        };
+      }
+
+      // Check if the parent is actually a child of this category
+      let currentParent = parentCategory.parent;
+      while (currentParent) {
+        if (currentParent.id === id) {
+          return {
+            data: null,
+            error: "Cannot create circular reference in category hierarchy",
+          };
+        }
+        const nextParent = await db.category.findUnique({
+          where: { id: currentParent.id },
+          include: { parent: true },
+        });
+        currentParent = nextParent?.parent || null;
+      }
     }
 
     // Generate slug if title changed
@@ -138,11 +270,15 @@ export async function updateCategoryById(
         slug,
         description: data.description || null,
         imageUrl: data.imageUrl || existingCategory.imageUrl,
+        parentId: data.parentId || null,
       },
       include: {
+        parent: true,
+        subcategories: true,
         _count: {
           select: {
             Product: true,
+            subcategories: true,
           },
         },
       },
@@ -168,11 +304,12 @@ export async function updateCategoryById(
 export async function deleteCategoryById(id: string) {
   console.log("Deleting category with ID:", id);
   try {
-    // Check if category has products
+    // Check if category has products or subcategories
     const category = await db.category.findUnique({
       where: { id },
       include: {
         Product: true,
+        subcategories: true,
       },
     });
 
@@ -188,6 +325,14 @@ export async function deleteCategoryById(id: string) {
       return {
         success: false,
         error: `Cannot delete category. It has ${category.Product.length} products assigned to it.`,
+        status: 405,
+      };
+    }
+
+    if (category.subcategories.length > 0) {
+      return {
+        success: false,
+        error: `Cannot delete category. It has ${category.subcategories.length} subcategories. Please delete or reassign subcategories first.`,
         status: 405,
       };
     }
@@ -216,7 +361,7 @@ export async function deleteCategoryById(id: string) {
 // Delete multiple categories
 export async function deleteManyCategories(ids: string[]) {
   try {
-    // Check if any categories have products
+    // Check if any categories have products or subcategories
     const categories = await db.category.findMany({
       where: {
         id: {
@@ -227,6 +372,7 @@ export async function deleteManyCategories(ids: string[]) {
         _count: {
           select: {
             Product: true,
+            subcategories: true,
           },
         },
       },
@@ -236,10 +382,21 @@ export async function deleteManyCategories(ids: string[]) {
       (cat) => cat._count.Product > 0
     );
 
+    const categoriesWithSubcategories = categories.filter(
+      (cat) => cat._count.subcategories > 0
+    );
+
     if (categoriesWithProducts.length > 0) {
       return {
         success: false,
         error: `Cannot delete ${categoriesWithProducts.length} categories as they have products assigned.`,
+      };
+    }
+
+    if (categoriesWithSubcategories.length > 0) {
+      return {
+        success: false,
+        error: `Cannot delete ${categoriesWithSubcategories.length} categories as they have subcategories.`,
       };
     }
 
@@ -262,6 +419,53 @@ export async function deleteManyCategories(ids: string[]) {
     return {
       success: false,
       error: "Failed to delete categories",
+    };
+  }
+}
+
+// Get categories formatted for product selection (hierarchical display)
+export async function getCategoriesForProductSelection() {
+  try {
+    const categories = await db.category.findMany({
+      include: {
+        parent: true,
+        subcategories: {
+          orderBy: { title: "asc" },
+        },
+      },
+      orderBy: [{ title: "asc" }],
+    });
+
+    // Format categories for dropdown display
+    const formattedCategories = categories.map((category) => ({
+      id: category.id,
+      title: category.title,
+      slug: category.slug,
+      parentId: category.parentId,
+      isSubcategory: !!category.parentId,
+      displayName: category.parentId
+        ? `${category.parent?.title} → ${category.title}`
+        : category.title,
+      level: category.parentId ? 1 : 0,
+    }));
+
+    // Sort to show parent categories first, then their subcategories
+    const sortedCategories = formattedCategories.sort((a, b) => {
+      if (a.level !== b.level) {
+        return a.level - b.level;
+      }
+      return a.displayName.localeCompare(b.displayName);
+    });
+
+    return {
+      data: sortedCategories,
+      error: null,
+    };
+  } catch (error) {
+    console.error("Error fetching categories for product selection:", error);
+    return {
+      data: [],
+      error: "Failed to fetch categories",
     };
   }
 }

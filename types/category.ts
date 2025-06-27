@@ -35,6 +35,7 @@ export interface CategoryCreateData {
   title: string;
   slug: string;
   imageUrl?: string;
+  description?: string;
 }
 
 export interface CategoryMutationData {
