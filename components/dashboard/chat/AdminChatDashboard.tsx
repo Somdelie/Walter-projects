@@ -19,6 +19,8 @@ import {
   Archive,
   Star,
   Filter,
+  Menu,
+  X,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -73,17 +75,19 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
     resolved: 0,
   })
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesScrollRef = useRef<HTMLDivElement>(null)
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
     if (messagesScrollRef.current) {
-      const scrollContainer = messagesScrollRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      const scrollContainer = messagesScrollRef.current.querySelector("[data-radix-scroll-area-viewport]")
       if (scrollContainer) {
         scrollContainer.scrollTo({
           top: scrollContainer.scrollHeight,
-          behavior: "smooth"
+          behavior: "smooth",
         })
       }
     }
@@ -272,8 +276,33 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
 
   return (
     <div className="flex h-full bg-gray-50">
+      {/* Mobile Menu Button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="bg-white shadow-md"
+        >
+          {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        </Button>
+      </div>
+
       {/* Admin Sidebar */}
-      <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
+      <div
+        className={`
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        fixed lg:relative inset-y-0 left-0 z-40 w-80 lg:w-96 xl:w-[400px]
+        bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out
+      `}
+      >
+        {/* Mobile Overlay */}
+        {isMobileMenuOpen && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
         {/* Admin Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
@@ -302,21 +331,21 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 gap-2 mb-4">
-            <Card className="p-3">
+            <Card className="p-2 lg:p-3">
               <div className="flex items-center space-x-2">
                 <MessageSquare className="w-4 h-4 text-blue-600" />
                 <div>
                   <p className="text-xs text-gray-500">Total</p>
-                  <p className="text-lg font-semibold">{stats.total}</p>
+                  <p className="text-base lg:text-lg font-semibold">{stats.total}</p>
                 </div>
               </div>
             </Card>
-            <Card className="p-3">
+            <Card className="p-2 lg:p-3">
               <div className="flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 text-red-600" />
                 <div>
                   <p className="text-xs text-gray-500">Unread</p>
-                  <p className="text-lg font-semibold">{stats.unread}</p>
+                  <p className="text-base lg:text-lg font-semibold">{stats.unread}</p>
                 </div>
               </div>
             </Card>
@@ -337,29 +366,33 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
         {/* Conversation Tabs */}
         <div className="border-b border-gray-200">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 rounded-none h-12">
-              <TabsTrigger value="all" className="text-xs">
-                All
+            <TabsList className="grid w-full grid-cols-4 rounded-none h-10 lg:h-12">
+              <TabsTrigger value="all" className="text-xs px-1">
+                <span className="hidden sm:inline">All</span>
+                <span className="sm:hidden">A</span>
                 <Badge variant="secondary" className="ml-1 text-xs">
                   {stats.total}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="unread" className="text-xs">
-                Unread
+              <TabsTrigger value="unread" className="text-xs px-1">
+                <span className="hidden sm:inline">Unread</span>
+                <span className="sm:hidden">U</span>
                 {stats.unread > 0 && (
                   <Badge variant="destructive" className="ml-1 text-xs">
                     {stats.unread}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="active" className="text-xs">
-                Active
+              <TabsTrigger value="active" className="text-xs px-1">
+                <span className="hidden sm:inline">Active</span>
+                <span className="sm:hidden">Ac</span>
                 <Badge variant="default" className="ml-1 text-xs">
                   {stats.active}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="resolved" className="text-xs">
-                Resolved
+              <TabsTrigger value="resolved" className="text-xs px-1">
+                <span className="hidden sm:inline">Resolved</span>
+                <span className="sm:hidden">R</span>
                 <Badge variant="outline" className="ml-1 text-xs">
                   {stats.resolved}
                 </Badge>
@@ -380,12 +413,15 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className={`p-3 rounded-lg cursor-pointer transition-all mb-2 border ${
+                    className={`p-4 lg:p-3 rounded-lg cursor-pointer transition-all mb-2 border ${
                       selectedConversation === conversation.id
                         ? "bg-blue-50 border-blue-200 shadow-sm"
                         : "hover:bg-gray-50 border-transparent"
                     }`}
-                    onClick={() => setSelectedConversation(conversation.id)}
+                    onClick={() => {
+                      setSelectedConversation(conversation.id)
+                      setIsMobileMenuOpen(false) // Close mobile menu when selecting conversation
+                    }}
                   >
                     <div className="flex items-start space-x-3">
                       <div className="relative">
@@ -566,6 +602,7 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
                           <AvatarImage
                             src={
                               conversations.find((c) => c.id === selectedConversation)?.customer?.image ||
+                              "/placeholder.svg" ||
                               "/placeholder.svg"
                             }
                           />
@@ -595,16 +632,16 @@ const AdminChatDashboard = ({ currentUserId }: AdminChatDashboardProps) => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="p-4 bg-white border-t border-gray-200">
+            <div className="p-3 lg:p-4 bg-white border-t border-gray-200">
               <div className="flex space-x-2">
                 <Input
                   placeholder="Type your response..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                  className="flex-1"
+                  className="flex-1 text-base lg:text-sm" // Prevent zoom on iOS
                 />
-                <Button onClick={sendMessage} disabled={!newMessage.trim()}>
+                <Button onClick={sendMessage} disabled={!newMessage.trim()} size="sm" className="px-3">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>

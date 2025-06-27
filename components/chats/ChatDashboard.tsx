@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MessageSquare, Send, Search, Users, CheckCheck } from "lucide-react"
+import { MessageSquare, Send, Search, Users, CheckCheck, Menu, X } from 'lucide-react'
 import { motion, AnimatePresence } from "framer-motion"
 
 interface User {
@@ -53,6 +53,8 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
   const [admins, setAdmins] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [isTyping, setIsTyping] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesScrollRef = useRef<HTMLDivElement>(null)
@@ -62,11 +64,11 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
   // Scroll to bottom of messages
   const scrollToBottom = () => {
     if (messagesScrollRef.current) {
-      const scrollContainer = messagesScrollRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      const scrollContainer = messagesScrollRef.current.querySelector("[data-radix-scroll-area-viewport]")
       if (scrollContainer) {
         scrollContainer.scrollTo({
           top: scrollContainer.scrollHeight,
-          behavior: "smooth"
+          behavior: "smooth",
         })
       }
     }
@@ -144,8 +146,10 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
 
   // Send typing indicator
   const sendTypingIndicator = useCallback(
-    async (isTyping: boolean) => {
+    async (typing: boolean) => {
       if (!selectedConversation || !currentUser) return
+
+      setIsTyping(typing)
 
       try {
         await fetch("/api/chat/typing", {
@@ -154,7 +158,7 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
           body: JSON.stringify({
             conversationId: selectedConversation,
             userId: currentUserId,
-            isTyping,
+            isTyping: typing,
             userName: currentUser.name,
           }),
         })
@@ -167,7 +171,9 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
 
   // Handle typing
   const handleTyping = () => {
-    sendTypingIndicator(true)
+    if (!isTyping) {
+      sendTypingIndicator(true)
+    }
 
     // Clear existing timeout
     if (typingTimeoutRef.current) {
@@ -314,6 +320,14 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
     }
   }, [])
 
+  // Reset typing state when conversation changes
+  useEffect(() => {
+    setIsTyping(false)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+  }, [selectedConversation])
+
   useEffect(() => {
     fetchCurrentUser()
     fetchConversations()
@@ -335,7 +349,7 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
     if (!conv.customer?.name || !conv.admin?.name) {
       return false
     }
-    
+
     return (
       conv.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       conv.admin.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -367,11 +381,37 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
   }
 
   return (
-    <div className="flex h-full bg-gray-50">
+    <div className="flex h-screen bg-gray-50 relative">
+      {/* Mobile Menu Button */}
+      <div className="lg:hidden fixed top-16 left-4 z-50">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="bg-white shadow-md"
+        >
+          {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        </Button>
+      </div>
+
+      {/* Mobile Overlay - moved outside sidebar */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      <div
+        className={`
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        fixed lg:relative inset-y-0 left-0 z-40 w-80 lg:w-80 xl:w-96 
+        bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out
+      `}
+      >
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-3 lg:p-4 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900">
               {isAdmin ? "Support Dashboard" : "Customer Support"}
@@ -382,7 +422,7 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
             </Badge>
           </div>
 
-          <div className="relative">
+          <div className="relative mt-2 lg:mt-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Search conversations..."
@@ -395,7 +435,7 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
 
         {/* New Conversation (Customer only) */}
         {!isAdmin && (
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
             <h3 className="text-sm font-medium text-gray-700 mb-2">Start New Chat</h3>
             <div className="space-y-2">
               {admins.map((admin) => (
@@ -423,7 +463,7 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
         )}
 
         {/* Conversations List */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="p-2">
             <AnimatePresence>
               {filteredConversations.map((conversation) => (
@@ -432,10 +472,13 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
+                  className={`p-4 lg:p-3 rounded-lg cursor-pointer transition-colors mb-2 ${
                     selectedConversation === conversation.id ? "bg-blue-50 border border-blue-200" : "hover:bg-gray-50"
                   }`}
-                  onClick={() => setSelectedConversation(conversation.id)}
+                  onClick={() => {
+                    setSelectedConversation(conversation.id)
+                    setIsMobileMenuOpen(false) // Close mobile menu when selecting conversation
+                  }}
                 >
                   <div className="flex items-start space-x-3">
                     <div className="relative">
@@ -457,7 +500,9 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {isAdmin ? conversation.customer?.name || "Unknown Customer" : conversation.admin?.name || "Unknown Admin"}
+                          {isAdmin
+                            ? conversation.customer?.name || "Unknown Customer"
+                            : conversation.admin?.name || "Unknown Admin"}
                         </p>
                         <div className="flex items-center space-x-1">
                           {conversation._count.messages > 0 && (
@@ -487,11 +532,11 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-0 min-w-0">
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 bg-white border-b border-gray-200">
+            <div className="p-4 bg-white border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center space-x-3">
                 <Avatar className="w-10 h-10">
                   <AvatarImage
@@ -507,7 +552,8 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
                 </Avatar>
                 <div>
                   <h3 className="font-medium text-gray-900">
-                    {conversations.find((c) => c.id === selectedConversation)?.[isAdmin ? "customer" : "admin"]?.name || "Unknown User"}
+                    {conversations.find((c) => c.id === selectedConversation)?.[isAdmin ? "customer" : "admin"]?.name ||
+                      "Unknown User"}
                   </h3>
                   <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <div
@@ -534,76 +580,78 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
               </div>
             </div>
 
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-4" ref={messagesScrollRef}>
-              <div className="space-y-4">
-                <AnimatePresence>
-                  {messages.map((message) => (
-                    <motion.div
-                      key={message.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${message.sender.id === currentUserId ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                          message.sender.id === currentUserId
-                            ? "bg-blue-600 text-white"
-                            : "bg-white border border-gray-200"
-                        }`}
+            {/* Messages - Fixed height calculation */}
+            <div className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full p-4" ref={messagesScrollRef}>
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {messages.map((message) => (
+                      <motion.div
+                        key={message.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`flex ${message.sender.id === currentUserId ? "justify-end" : "justify-start"}`}
                       >
-                        <p className="text-sm">{message.content}</p>
                         <div
-                          className={`flex items-center justify-between mt-1 text-xs ${
-                            message.sender.id === currentUserId ? "text-blue-100" : "text-gray-500"
+                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                            message.sender.id === currentUserId
+                              ? "bg-blue-600 text-white"
+                              : "bg-white border border-gray-200"
                           }`}
                         >
-                          <span>{formatTime(message.createdAt)}</span>
-                          {message.sender.id === currentUserId && (
-                            <CheckCheck className={`w-3 h-3 ${message.isRead ? "text-blue-200" : "text-blue-300"}`} />
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-
-                {/* Typing Indicator */}
-                <AnimatePresence>
-                  {currentTypingUsers.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="flex justify-start"
-                    >
-                      <div className="bg-gray-100 px-4 py-2 rounded-lg">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                            <div
-                              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "0.1s" }}
-                            />
-                            <div
-                              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                              style={{ animationDelay: "0.2s" }}
-                            />
+                          <p className="text-sm">{message.content}</p>
+                          <div
+                            className={`flex items-center justify-between mt-1 text-xs ${
+                              message.sender.id === currentUserId ? "text-blue-100" : "text-gray-500"
+                            }`}
+                          >
+                            <span>{formatTime(message.createdAt)}</span>
+                            {message.sender.id === currentUserId && (
+                              <CheckCheck className={`w-3 h-3 ${message.isRead ? "text-blue-200" : "text-blue-300"}`} />
+                            )}
                           </div>
-                          <span className="text-xs text-gray-500">
-                            {currentTypingUsers.map((user) => user.name).join(", ")} typing...
-                          </span>
                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
+                  {/* Typing Indicator */}
+                  <AnimatePresence>
+                    {currentTypingUsers.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="flex justify-start"
+                      >
+                        <div className="bg-gray-100 px-4 py-2 rounded-lg">
+                          <div className="flex items-center space-x-2">
+                            <div className="flex space-x-1">
+                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                              <div
+                                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "0.1s" }}
+                              />
+                              <div
+                                className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                                style={{ animationDelay: "0.2s" }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {currentTypingUsers.map((user) => user.name).join(", ")} typing...
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+            </div>
 
             {/* Message Input */}
-            <div className="p-4 bg-white border-t border-gray-200">
+            <div className="p-3 lg:p-4 bg-white border-t border-gray-200 flex-shrink-0">
               <div className="flex space-x-2">
                 <Input
                   placeholder="Type your message..."
@@ -613,9 +661,9 @@ const ChatDashboard = ({ currentUserId, isAdmin }: ChatDashboardProps) => {
                     handleTyping()
                   }}
                   onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                  className="flex-1"
+                  className="flex-1 text-base lg:text-sm" // Prevent zoom on iOS
                 />
-                <Button onClick={sendMessage} disabled={!newMessage.trim()}>
+                <Button onClick={sendMessage} disabled={!newMessage.trim()} size="sm" className="px-3">
                   <Send className="w-4 h-4" />
                 </Button>
               </div>
