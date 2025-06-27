@@ -118,79 +118,78 @@ export function CategoryForm() {
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Add New Category</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Add New Category</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(saveBrand)} className="space-y-4">
-          <TextInput label="Category Title" name="title" register={register} errors={errors}/>
 
-          {/* Parent Category Selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Parent Category (Optional)</label>
-            <Select value={selectedParentId} onValueChange={setSelectedParentId} disabled={loadingParents}>
-              <SelectTrigger>
-                <SelectValue placeholder={loadingParents ? "Loading..." : "Select parent category (optional)"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None (Main Category)</SelectItem>
-                {parentCategories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Leave empty to create a main category, or select a parent to create a subcategory.
-            </p>
-          </div>
+        <div className="flex-1 overflow-y-auto pr-2">
+          <form onSubmit={handleSubmit(saveBrand)} className="space-y-4 pb-4">
+            {/* All your existing form fields remain the same */}
+            <TextInput label="Category Title" name="title" register={register} errors={errors} />
 
-          <TextInput label="Category Description" name="description" register={register} errors={errors} />
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Category Image</label>
-            <div className="flex flex-col space-y-3 px-4 items-center w-full border-2 border-dashed border-orange-300 rounded-lg p-4">
-              {imageUrl && (
-                <div className="relative group w-full flex justify-center items-center">
-                  <img
-                    src={imageUrl || "/placeholder.svg"}
-                    alt="Category image"
-                    className="w-24 h-24 object-cover rounded-md border shadow-sm"
-                    onError={(e) => {
-                      e.currentTarget.src = "/placeholder.jpg"
-                    }}
-                  />
-                </div>
-              )}
-
-              <ImageInput
-                title=""
-                imageUrl={imageUrl}
-                setImageUrl={handleImageChange}
-                endpoint="categoryImage" // Adjust endpoint as needed
-              />
-
-              <p className="text-xs text-muted-foreground text-center">
-                Upload a high quality image for your category. JPG, PNG, and WebP formats supported (max 1MB).
+            {/* Parent Category Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Parent Category (Optional)</label>
+              <Select value={selectedParentId} onValueChange={setSelectedParentId} disabled={loadingParents}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingParents ? "Loading..." : "Select parent category (optional)"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (Main Category)</SelectItem>
+                  {parentCategories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Leave empty to create a main category, or select a parent to create a subcategory.
               </p>
             </div>
-          </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait...
-              </>
-            ) : (
-              <>
-                <Check className="w-4 h-4 mr-2" />
-                Save Category
-              </>
-            )}
-          </Button>
-        </form>
+            <TextInput label="Category Description" name="description" register={register} errors={errors} />
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Category Image</label>
+              <div className="flex flex-col space-y-3 px-4 items-center w-full border-2 border-dashed border-orange-300 rounded-lg p-4">
+                {imageUrl && (
+                  <div className="relative group w-full flex justify-center items-center">
+                    <img
+                      src={imageUrl || "/placeholder.svg"}
+                      alt="Category image"
+                      className="w-24 h-24 object-cover rounded-md border shadow-sm"
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.jpg"
+                      }}
+                    />
+                  </div>
+                )}
+
+                <ImageInput title="" imageUrl={imageUrl} setImageUrl={handleImageChange} endpoint="categoryImage" />
+
+                <p className="text-xs text-muted-foreground text-center">
+                  Upload a high quality image for your category. JPG, PNG, and WebP formats supported (max 1MB).
+                </p>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Save Category
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   )
