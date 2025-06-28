@@ -227,7 +227,8 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                   )}
                 </div>
 
-                {/* Content Section */}
+          
+          
                 <div className="flex-1 p-6 flex flex-col justify-between">
                   <div className="space-y-3">
                     {/* Category */}
@@ -301,6 +302,9 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                     </Button>
                   </div>
                 </div>
+
+
+
               </div>
             </CardContent>
           </Card>
@@ -322,11 +326,9 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
         <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 bg-white border border-gray-100 h-full">
           <CardContent className="p-0 h-full grid grid-cols-1">
             {/* Header with Category */}
-            <div className="p-4 pb-2">
-              <div className="flex items-center justify-between">
-                <Badge variant="outline" className="text-xs text-gray-600">
-                  {product?.category?.title}
-                </Badge>
+            <div className="p-4 pb-2 relative">
+              <div className="absolute top-5 right-0">
+              
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}

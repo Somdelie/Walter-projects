@@ -262,59 +262,9 @@ export const sidebarLinks: ISidebarLink[] = [
         permission: "users.read",
       },
       {
-        title: "Add User",
-        href: "/dashboard/users/create",
-        permission: "users.create",
-      },
-      {
         title: "Roles & Permissions",
         href: "/dashboard/users/roles",
         permission: "roles.read",
-      },
-      {
-        title: "Staff Members",
-        href: "/dashboard/users/staff",
-        permission: "users.read",
-      },
-    ],
-  },
-
-  // Settings
-  {
-    title: "Settings",
-    icon: Settings,
-    permission: "settings.read",
-    dropdown: true,
-    dropdownMenu: [
-      {
-        title: "General Settings",
-        href: "/dashboard/settings/general",
-        permission: "settings.read",
-      },
-      {
-        title: "E-commerce Settings",
-        href: "/dashboard/settings/ecommerce",
-        permission: "settings.update",
-      },
-      {
-        title: "Payment Settings",
-        href: "/dashboard/settings/payments",
-        permission: "settings.update",
-      },
-      {
-        title: "Delivery Settings",
-        href: "/dashboard/settings/delivery",
-        permission: "settings.update",
-      },
-      {
-        title: "Email Templates",
-        href: "/dashboard/settings/emails",
-        permission: "settings.update",
-      },
-      {
-        title: "Tax Settings",
-        href: "/dashboard/settings/tax",
-        permission: "settings.update",
       },
     ],
   },

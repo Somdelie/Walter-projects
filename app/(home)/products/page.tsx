@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ProductsPage({
-  searchParams
+  searchParams,
 }: {
   searchParams: Promise<{
     category?: string
@@ -24,33 +24,48 @@ export default async function ProductsPage({
   }>
 }) {
   const { category, type, search, sort, page } = await searchParams
-  
+
   // Fetch data server-side
   const [productsResult, categoriesResult] = await Promise.all([getAllProducts(), getCategories()])
-
   const categories = (categoriesResult.data || []).map((category) => ({
     ...category,
     description: category.description ?? undefined,
   }))
-  
+
   // Map products with proper category structure
   const products = (productsResult.data || []).map((product) => {
     const productCategory = categories.find((cat) => cat.id === product.categoryId)
-    
+
     return {
       ...product,
-      category: productCategory ? {
-        id: productCategory.id,
-        title: productCategory.title
-      } : null,
+      category: productCategory
+        ? {
+            id: productCategory.id,
+            title: productCategory.title,
+          }
+        : null,
     }
   })
+
+  // Helper function to get all subcategory IDs for a given category
+  const getSubcategoryIds = (categoryId: string): string[] => {
+    const subcategories = categories.filter((cat) => cat.parentId === categoryId)
+    let allIds = [categoryId] // Include the parent category itself
+
+    for (const subcategory of subcategories) {
+      allIds = [...allIds, ...getSubcategoryIds(subcategory.id)]
+    }
+
+    return allIds
+  }
 
   // Filter products based on search params
   let filteredProducts = products.filter((product) => product.status === "ACTIVE")
 
   if (category) {
-    filteredProducts = filteredProducts.filter((product) => product.categoryId === category)
+    // Get all category IDs (parent + all subcategories)
+    const categoryIds = getSubcategoryIds(category)
+    filteredProducts = filteredProducts.filter((product) => categoryIds.includes(product.categoryId))
   }
 
   if (type) {
@@ -86,33 +101,6 @@ export default async function ProductsPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-slate-900 to-slate-700 text-white">
-        <div className="container mx-auto px-4 py-16">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Premium Aluminum Products</h1>
-            <p className="text-xl text-slate-200 mb-8">
-              Discover our extensive range of high-quality aluminum windows, doors, profiles, and accessories. Perfect
-              for residential and commercial projects.
-            </p>
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Premium Quality</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <span>Fast Delivery</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span>Expert Support</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Products Section */}
       <div className="container mx-auto px-4 py-8">
         <Suspense fallback={<ProductsLoading />}>
@@ -124,7 +112,7 @@ export default async function ProductsPage({
               type,
               search,
               sort,
-              page
+              page,
             }}
             totalProducts={products.length}
           />
