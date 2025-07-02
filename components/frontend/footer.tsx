@@ -80,7 +80,7 @@ export default function SiteFooter() {
               </div>
               <div className="flex items-center gap-3 text-orange-600">
                 <Phone className="h-5 w-5 text-blue-400 flex-shrink-0" />
-               <div className="flex-col md:flex-row gap-2">
+               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                  <span>+27 11 262 0677</span>
                 <span>+27 62 048 3184</span>
                 <span>+27 82 256 0441</span>

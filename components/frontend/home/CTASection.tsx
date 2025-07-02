@@ -30,11 +30,11 @@ export default function CTASection() {
           <div className="flex flex-col sm:flex-row gap-8 justify-center items-center text-slate-300">
             <div className="flex items-center gap-2">
               <Phone className="h-5 w-5" />
-              <span>+27 11 123 4567</span>
+              <span>+27 11 262 0677</span>
             </div>
             <div className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              <span>admin@cautiousndlovu.co.za</span>
+              <span>info@walterprojects.co.za</span>
             </div>
           </div>
         </div>
