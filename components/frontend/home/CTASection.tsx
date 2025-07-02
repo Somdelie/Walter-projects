@@ -16,7 +16,7 @@ export default function CTASection() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
             <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
-              <Link href="/contact">
+              <Link href="/chats">
                 Get Free Quote
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>

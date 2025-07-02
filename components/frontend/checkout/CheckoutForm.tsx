@@ -12,7 +12,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
-import { MapPin, CreditCard, Truck, Package } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { MapPin, CreditCard, Truck, Package, Info, Copy, Mail } from "lucide-react"
 
 const checkoutSchema = z.object({
   // Shipping Address
@@ -96,6 +97,15 @@ export function CheckoutForm({
 
     onDeliveryMethodChange?.(value)
   }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      // You could add a toast notification here
+      console.log('Copied to clipboard:', text)
+    })
+  }
+
+  const selectedPaymentMethod = form.watch("paymentMethod")
 
   return (
     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -284,6 +294,107 @@ export function CheckoutForm({
               </RadioGroup>
             </CardContent>
           </Card>
+
+          {/* EFT Banking Details */}
+          {selectedPaymentMethod === "EFT" && (
+            <Card className="border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <Info className="w-5 h-5" />
+                  EFT Banking Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-white p-4 rounded-lg border">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label className="font-medium">Bank Name:</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard("First National Bank")}
+                          className="h-6 px-2"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <p className="text-sm bg-gray-50 p-2 rounded">First National Bank</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label className="font-medium">Account Name:</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard("Walter Projects")}
+                          className="h-6 px-2"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <p className="text-sm bg-gray-50 p-2 rounded">Walter Projects</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label className="font-medium">Account Number:</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard("62012345678")}
+                          className="h-6 px-2"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <p className="text-sm bg-gray-50 p-2 rounded font-mono">63128946051</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label className="font-medium">Branch Code:</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard("250655")}
+                          className="h-6 px-2"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <p className="text-sm bg-gray-50 p-2 rounded font-mono">250655</p>
+                    </div>
+                  </div>
+                </div>
+
+                <Alert>
+                  <Mail className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Important:</strong> After making your EFT payment, please send your proof of payment to{" "}
+                    <a 
+                      href="mailto:info@walterprojects.co.za" 
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      info@walterprojects.co.za
+                    </a>
+                    {" "}to confirm your order.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p>• Use your order number as the payment reference</p>
+                  <p>• Your order will be processed once payment is confirmed</p>
+                  <p>• Please allow 1-2 business days for payment verification</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={prevStep}>

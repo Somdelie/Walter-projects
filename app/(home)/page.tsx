@@ -9,6 +9,7 @@ import WhyChooseUs from "@/components/frontend/home/WhyChooseUs"
 import StatsSection from "@/components/frontend/home/StatsSection"
 import TestimonialsSection from "@/components/frontend/home/TestimonialsSection"
 import CTASection from "@/components/frontend/home/CTASection"
+import PartnershipSection from "@/components/frontend/home/PartnershipSection"
 
 
 export default async function HomePage() {
@@ -39,6 +40,9 @@ export default async function HomePage() {
       <Suspense fallback={<div className="h-96 bg-gray-50 animate-pulse" />}>
         <FeaturedProducts products={featuredProducts} />
       </Suspense>
+
+      {/* Partnership Section */}
+      <PartnershipSection />
 
       {/* Categories Showcase */}
       <CategoriesShowcase categories={categories} />

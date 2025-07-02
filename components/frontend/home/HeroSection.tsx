@@ -255,7 +255,7 @@ export default function HeroSection() {
             </motion.div>
 
             {/* Navigation Arrows */}
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.4, duration: 0.6 }}
@@ -275,7 +275,7 @@ export default function HeroSection() {
               >
                 <ArrowRight className="h-5 w-5" />
               </motion.button>
-            </motion.div>
+            </motion.div> */}
           </motion.div>
 
           {/* Hero Product Image */}
