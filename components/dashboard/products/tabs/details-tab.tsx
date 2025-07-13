@@ -152,6 +152,14 @@ export function DetailsTab({ product }: DetailsTabProps) {
                 <SelectItem value="ACCESSORY">Accessory</SelectItem>
                 <SelectItem value="GLASS">Glass</SelectItem>
                 <SelectItem value="HARDWARE">Hardware</SelectItem>
+                <SelectItem value="BALUSTRADES">Balustrades</SelectItem>
+                <SelectItem value="FACADE">Facade</SelectItem>
+                <SelectItem value="SHUTTER">Shutter</SelectItem>
+                <SelectItem value="BLINDS">Blinds</SelectItem>
+                <SelectItem value="AWNINGS">Awnings</SelectItem>
+                <SelectItem value="GATES">Gates</SelectItem>
+                <SelectItem value="FENCING">Fencing</SelectItem>
+                <SelectItem value="OTHER">Other</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

@@ -29,7 +29,7 @@ export default function CategoriesShowcase({ categories }: CategoriesShowcasePro
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-orange-900 mb-4">Product Categories</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4"><span className="text-orange-500">Product</span> Categories</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Comprehensive range of aluminum solutions for every construction and architectural need
           </p>

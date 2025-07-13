@@ -37,6 +37,14 @@ const PRODUCT_TYPES = [
   { value: "ACCESSORY", label: "Accessories" },
   { value: "GLASS", label: "Glass" },
   { value: "HARDWARE", label: "Hardware" },
+  { value: "BALUSTRADES", label: "Balustrades" },
+  { value: "FACADE", label: "Facade" },
+  { value: "SHUTTER", label: "Shutters" },
+  { value: "BLINDS", label: "Blinds" },
+  { value: "AWNINGS", label: "Awnings" },
+  { value: "GATES", label: "Gates" },
+  { value: "FENCING", label: "Fencing" },
+  { value: "OTHER", label: "Other" },
 ]
 
 export default function ProductFilters({ categories, searchParams, onFilterChange }: ProductFiltersProps) {

@@ -46,14 +46,21 @@ export interface ProductMutationData extends Partial<ProductCreateData> {
   status?: ProductStatus;
 }
 
-// Enums for form options
 export const PRODUCT_TYPES = [
-  { value: "WINDOW" as const, label: "Window" },
-  { value: "DOOR" as const, label: "Door" },
-  { value: "PROFILE" as const, label: "Profile" },
-  { value: "ACCESSORY" as const, label: "Accessory" },
-  { value: "GLASS" as const, label: "Glass" },
-  { value: "HARDWARE" as const, label: "Hardware" },
+  { value: "WINDOW", label: "Windows" },
+  { value: "DOOR", label: "Doors" },
+  { value: "PROFILE", label: "Profiles" },
+  { value: "ACCESSORY", label: "Accessories" },
+  { value: "GLASS", label: "Glass" },
+  { value: "HARDWARE", label: "Hardware" },
+  { value: "BALUSTRADES", label: "Balustrades" },
+  { value: "FACADE", label: "Facade" },
+  { value: "SHUTTER", label: "Shutters" },
+  { value: "BLINDS", label: "Blinds" },
+  { value: "AWNINGS", label: "Awnings" },
+  { value: "GATES", label: "Gates" },
+  { value: "FENCING", label: "Fencing" },
+  { value: "OTHER", label: "Other" },
 ] as const;
 
 export const PRODUCT_STATUSES = [
