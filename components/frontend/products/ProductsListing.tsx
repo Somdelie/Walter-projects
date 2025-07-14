@@ -24,9 +24,15 @@ interface Category {
   description?: string
 }
 
+interface ProductType {
+  id: string
+  name: string
+}
+
 interface ProductsListingProps {
   products: ProductWithDetails[]
   categories: Category[]
+  productTypes: ProductType[]
   searchParams: {
     category?: string
     type?: string
@@ -37,7 +43,13 @@ interface ProductsListingProps {
   totalProducts: number
 }
 
-export default function ProductsListing({ products, categories, searchParams, totalProducts }: ProductsListingProps) {
+export default function ProductsListing({
+  products,
+  productTypes,
+  categories,
+  searchParams,
+  totalProducts,
+}: ProductsListingProps) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [showFilters, setShowFilters] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -52,7 +64,12 @@ export default function ProductsListing({ products, categories, searchParams, to
       value: searchParams.category,
       label: categories.find((c) => c.id === searchParams.category)?.title || "Category",
     },
-    searchParams.type && { key: "type", value: searchParams.type, label: searchParams.type.replace("_", " ") },
+    searchParams.type && {
+      key: "type",
+      value: searchParams.type,
+      // Updated to find the product type name by ID
+      label: productTypes.find((pt) => pt.id === searchParams.type)?.name || "Product Type",
+    },
     searchParams.search && { key: "search", value: searchParams.search, label: `"${searchParams.search}"` },
   ].filter((filter): filter is { key: string; value: string; label: string } =>
     Boolean(filter && typeof filter !== "string"),
@@ -93,7 +110,6 @@ export default function ProductsListing({ products, categories, searchParams, to
                 Showing {products.length} of {totalProducts} products
               </p>
             </div>
-
             <div className="flex items-center justify-between lg:justify-end gap-3 lg:gap-4">
               {/* View Mode Toggle */}
               <div className="flex items-center border rounded-lg p-1 bg-gray-50">
@@ -116,7 +132,6 @@ export default function ProductsListing({ products, categories, searchParams, to
                   <span className="hidden sm:ml-2 sm:inline">List</span>
                 </Button>
               </div>
-
               {/* Mobile Filter Sheet */}
               <div className="lg:hidden">
                 <Sheet open={showFilters} onOpenChange={setShowFilters}>
@@ -137,6 +152,7 @@ export default function ProductsListing({ products, categories, searchParams, to
                     </SheetHeader>
                     <div className="p-4 overflow-y-auto h-[calc(100vh-80px)]">
                       <ProductFilters
+                        productTypes={productTypes}
                         categories={categories}
                         searchParams={searchParams}
                         onFilterChange={() => setShowFilters(false)}
@@ -145,7 +161,6 @@ export default function ProductsListing({ products, categories, searchParams, to
                   </SheetContent>
                 </Sheet>
               </div>
-
               {/* Sort */}
               <div className="min-w-0 flex-shrink">
                 <ProductSort currentSort={searchParams.sort} />
@@ -186,6 +201,7 @@ export default function ProductsListing({ products, categories, searchParams, to
             {/* Desktop Filters Sidebar */}
             <div className="hidden lg:block w-64 xl:w-72 flex-shrink-0">
               <ProductFilters
+                productTypes={productTypes}
                 categories={categories}
                 searchParams={searchParams}
                 onFilterChange={() => setShowFilters(false)}

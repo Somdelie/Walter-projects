@@ -21,6 +21,7 @@ interface Category {
 
 interface ProductFiltersProps {
   categories: Category[]
+  productTypes: { id: string; name: string }[]
   searchParams: {
     category?: string
     type?: string
@@ -30,27 +31,32 @@ interface ProductFiltersProps {
   onFilterChange?: () => void
 }
 
-const PRODUCT_TYPES = [
-  { value: "WINDOW", label: "Windows" },
-  { value: "DOOR", label: "Doors" },
-  { value: "PROFILE", label: "Profiles" },
-  { value: "ACCESSORY", label: "Accessories" },
-  { value: "GLASS", label: "Glass" },
-  { value: "HARDWARE", label: "Hardware" },
-  { value: "BALUSTRADES", label: "Balustrades" },
-  { value: "FACADE", label: "Facade" },
-  { value: "SHUTTER", label: "Shutters" },
-  { value: "BLINDS", label: "Blinds" },
-  { value: "AWNINGS", label: "Awnings" },
-  { value: "GATES", label: "Gates" },
-  { value: "FENCING", label: "Fencing" },
-  { value: "OTHER", label: "Other" },
-]
+// const PRODUCT_TYPES = [
+//   { value: "WINDOW", label: "Windows" },
+//   { value: "DOOR", label: "Doors" },
+//   { value: "PROFILE", label: "Profiles" },
+//   { value: "ACCESSORY", label: "Accessories" },
+//   { value: "GLASS", label: "Glass" },
+//   { value: "HARDWARE", label: "Hardware" },
+//   { value: "BALUSTRADES", label: "Balustrades" },
+//   { value: "FACADE", label: "Facade" },
+//   { value: "SHUTTER", label: "Shutters" },
+//   { value: "BLINDS", label: "Blinds" },
+//   { value: "AWNINGS", label: "Awnings" },
+//   { value: "GATES", label: "Gates" },
+//   { value: "FENCING", label: "Fencing" },
+//   { value: "OTHER", label: "Other" },
+// ]
 
-export default function ProductFilters({ categories, searchParams, onFilterChange }: ProductFiltersProps) {
+export default function ProductFilters({ categories,productTypes, searchParams, onFilterChange }: ProductFiltersProps) {
   const router = useRouter()
   const urlSearchParams = useSearchParams()
   const [searchTerm, setSearchTerm] = useState(searchParams.search || "")
+
+  const PRODUCT_TYPES = productTypes.map((type) => ({
+    value: type.id,
+    label: type.name,
+  }))
 
   const updateFilter = (key: string, value: string | null) => {
     const params = new URLSearchParams(urlSearchParams.toString())
@@ -181,7 +187,7 @@ export default function ProductFilters({ categories, searchParams, onFilterChang
             </div>
 
             {/* Product Types List */}
-            <div className="space-y-2">
+               <ScrollArea className="h-[200px] lg:h-[250px] pr-2">  <div className="space-y-2">
               {PRODUCT_TYPES.map((type) => (
                 <motion.div
                   key={type.value}
@@ -203,7 +209,8 @@ export default function ProductFilters({ categories, searchParams, onFilterChang
                   </Label>
                 </motion.div>
               ))}
-            </div>
+            </div></ScrollArea>
+          
           </div>
         </CardContent>
       </Card>

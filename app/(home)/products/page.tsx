@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import { getCategories } from "@/actions/categories"
 import ProductsLoading from "@/components/frontend/products/ProductsLoading"
 import ProductsListing from "@/components/frontend/products/ProductsListing"
+import { getProductTypes } from "@/actions/productTypes"
 
 export const metadata: Metadata = {
   title: "Premium Aluminum Products | Windows, Doors & More",
@@ -25,8 +26,12 @@ export default async function ProductsPage({
 }) {
   const { category, type, search, sort, page } = await searchParams
 
+  const productTypesData = await getProductTypes()
+  const productTypes = productTypesData.data || []
+
   // Fetch data server-side
   const [productsResult, categoriesResult] = await Promise.all([getAllProducts(), getCategories()])
+
   const categories = (categoriesResult.data || []).map((category) => ({
     ...category,
     description: category.description ?? undefined,
@@ -35,7 +40,6 @@ export default async function ProductsPage({
   // Map products with proper category structure
   const products = (productsResult.data || []).map((product) => {
     const productCategory = categories.find((cat) => cat.id === product.categoryId)
-
     return {
       ...product,
       category: productCategory
@@ -51,11 +55,9 @@ export default async function ProductsPage({
   const getSubcategoryIds = (categoryId: string): string[] => {
     const subcategories = categories.filter((cat) => cat.parentId === categoryId)
     let allIds = [categoryId] // Include the parent category itself
-
     for (const subcategory of subcategories) {
       allIds = [...allIds, ...getSubcategoryIds(subcategory.id)]
     }
-
     return allIds
   }
 
@@ -69,7 +71,8 @@ export default async function ProductsPage({
   }
 
   if (type) {
-    filteredProducts = filteredProducts.filter((product) => product.type === type)
+    // Updated to use productTypeId instead of type
+    filteredProducts = filteredProducts.filter((product) => product.productTypeId === type)
   }
 
   if (search) {
@@ -105,6 +108,7 @@ export default async function ProductsPage({
       <div className="container mx-auto px-4 py-8">
         <Suspense fallback={<ProductsLoading />}>
           <ProductsListing
+            productTypes={productTypes}
             products={filteredProducts}
             categories={categories}
             searchParams={{
