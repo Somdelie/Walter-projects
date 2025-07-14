@@ -7,7 +7,6 @@
   },
   "scripts": {
      "dev": "next dev --turbopack",
-      "migrate:complete": "tsx scripts/complete-migration.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
