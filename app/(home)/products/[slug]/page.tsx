@@ -26,8 +26,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     description:
       product.shortDesc ||
       product.description ||
-      `High-quality ${product.type.toLowerCase()} from our premium aluminum collection.`,
-    keywords: `${product.name}, ${product.type.toLowerCase()}, aluminum, ${product.category?.title}`,
+      `High-quality ${product?.type?.toLowerCase()} from our premium aluminum collection.`,
+    keywords: `${product.name}, ${product.type?.toLowerCase()}, aluminum, ${product.category?.title}`,
     openGraph: {
       title: product.name,
       description: product.shortDesc || product.description || "",

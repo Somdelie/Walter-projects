@@ -253,7 +253,7 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
                     <div className="space-y-1 text-sm text-gray-600">
                       <div className="flex justify-between">
                         <span>Type:</span>
-                        <span className="font-medium">{product.type.replace("_", " ")}</span>
+                        <span className="font-medium">{product.type?.replace("_", " ")}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>SKU:</span>
@@ -401,7 +401,7 @@ export default function ProductCard({ product, viewMode, index }: ProductCardPro
               <div className="space-y-1 text-sm text-gray-600">
                 <div className="flex justify-between">
                   <span>Type:</span>
-                  <span className="font-medium">{product.type.replace("_", " ")}</span>
+                  <span className="font-medium">{product.type?.replace("_", " ")}</span>
                 </div>
                 {product.brand && (
                   <div className="flex justify-between">

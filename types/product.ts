@@ -12,7 +12,8 @@ export interface ProductCreateData {
   name: string;
   description?: string | null;
   shortDesc?: string | null;
-  type: ProductType;
+  type?: ProductType | string; // Use string to allow for dynamic types
+  productTypeId?: string; // Optional, if you have a specific type ID
   price: number;
   comparePrice?: number;
   costPrice?: number;

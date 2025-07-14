@@ -196,7 +196,7 @@ export default async function DashboardMain({
               <div key={product.id} className="flex items-center justify-between">
                 <div className="flex items-center">
                   <div className="w-10 h-10 bg-gray-100 flex items-center justify-center rounded mr-3">
-                    {getProductTypeIcon(product.type)}
+                    {getProductTypeIcon(product?.type || "OTHER")}
                   </div>
                   <div>
                     <div className="font-medium text-sm truncate">{product.name}</div>

@@ -1,4 +1,5 @@
 import { getCategories } from "@/actions/categories"
+import { getProductTypes } from "@/actions/productTypes"
 import { getProductById } from "@/actions/product"
 import { ProductUpdateForm } from "@/components/dashboard/products/ProductUpdateForm"
 import EmptyState from "@/components/global/EmptyState"
@@ -11,10 +12,11 @@ interface ProductWithDetails extends Product {
     id: string
     title: string
   }
-  // brand?: {
-  //   id: string
-  //   name: string
-  // }
+  productType?: {
+    id: string
+    name: string
+    slug: string
+  } | null
   variants: {
     id: string
     name: string
@@ -44,7 +46,16 @@ interface ProductWithDetails extends Product {
 
 interface Category {
   id: string
-    title: string
+  title: string
+}
+
+interface ProductType {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  isActive: boolean
+  sortOrder: number
 }
 
 const SingleProductPage = async ({
@@ -54,11 +65,26 @@ const SingleProductPage = async ({
 }) => {
   const productSlug = await params
   const product: ProductWithDetails | null = await getProductById(productSlug.slug)
-  const categories = await getCategories()
-    const categoryOptions = categories?.data?.map((category: Category) => ({
-        value: category.id,
-        label: category.title,
+
+  // Fetch both categories and product types
+  const [categoriesResult, productTypesResult] = await Promise.all([getCategories(), getProductTypes()])
+
+  const categoryOptions =
+    categoriesResult?.data?.map((category: Category) => ({
+      value: category.id,
+      label: category.title,
     })) || []
+
+  // Filter only active product types and sort by sortOrder
+  const productTypeOptions =
+    productTypesResult?.data
+      ?.filter((type: ProductType) => type.isActive)
+      ?.sort((a: ProductType, b: ProductType) => a.sortOrder - b.sortOrder)
+      ?.map((type: ProductType) => ({
+        value: type.id,
+        label: type.name,
+        description: type.description,
+      })) || []
 
   if (!product) {
     return <EmptyState message="Product not found" />
@@ -97,7 +123,7 @@ const SingleProductPage = async ({
         </div>
       </div>
 
-       <ProductUpdateForm product={product} categoryOptions={categoryOptions}/>
+      <ProductUpdateForm product={product} categoryOptions={categoryOptions} productTypeOptions={productTypeOptions} />
     </div>
   )
 }

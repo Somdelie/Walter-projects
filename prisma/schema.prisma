@@ -1,6 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// STEP 1: Add ProductType model and optional field WITHOUT changing the existing enum
 generator client {
   provider = "prisma-client-js"
 }
@@ -34,7 +32,8 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
@@ -45,10 +44,10 @@ enum UserRole {
 
 model Role {
   id          String   @id @default(cuid())
-  displayName String // Human-readable name (e.g., "Store Manager")
-  roleName    String   @unique // System name (e.g., "store_manager")
+  displayName String
+  roleName    String   @unique
   description String?
-  permissions String[] // Array of permission strings
+  permissions String[]
   users       User[]   @relation("UserRoles")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -66,8 +65,7 @@ model User {
   emailVerified         DateTime?
   image                 String?
   jobTitle              String?
-  roles                 Role[]         @relation("UserRoles") // This handles the role relationship
-  // role          UserRole  @default(USER)
+  roles                 Role[]         @relation("UserRoles")
   password              String?
   status                Boolean        @default(true)
   accounts              Account[]
@@ -78,8 +76,6 @@ model User {
   token                 String?
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
-  // Remove this line:
-  // roleId        String?
   Address               Address[]
   CartItem              CartItem[]
   WishlistItem          WishlistItem[]
@@ -96,12 +92,11 @@ model Category {
   slug        String  @unique
   imageUrl    String?
   description String?
-
-  // Self-referential relationship for subcategories
+  
   parentId      String?
   parent        Category?  @relation("CategorySubcategories", fields: [parentId], references: [id], onDelete: Cascade)
   subcategories Category[] @relation("CategorySubcategories")
-
+  
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
   Product   Product[]
@@ -121,11 +116,10 @@ model Saving {
   updatedAt   DateTime? @updatedAt
 }
 
-// Address Management
 model Address {
   id          String  @id @default(cuid())
   userId      String
-  type        String // "billing", "shipping", "both"
+  type        String
   firstName   String
   lastName    String
   company     String?
@@ -162,6 +156,23 @@ model Brand {
   @@index([slug])
 }
 
+// NEW: Dynamic ProductType model
+model ProductTypeRef {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+// KEEP the original enum exactly as it was
 enum ProductType {
   WINDOW
   DOOR
@@ -185,31 +196,30 @@ model Product {
   description String?       @db.Text
   shortDesc   String?
   sku         String        @unique
-  type        ProductType
+  
+  // KEEP original field exactly as it was
+  type ProductType?
+  
+  // ADD new optional field
+  productTypeId String?
+  productType   ProductTypeRef? @relation(fields: [productTypeId], references: [id], onDelete: SetNull)
+  
   status      ProductStatus @default(ACTIVE)
 
-  // Pricing
   price        Float
-  comparePrice Float? // For sale items
-  costPrice    Float? // For sale items
-
-  // Inventory
+  comparePrice Float?
+  costPrice    Float?
   stockQuantity Int     @default(0)
   lowStockAlert Int     @default(10)
   trackStock    Boolean @default(true)
-
-  // Physical attributes
-  weight Float // in kg
-  length Float // in mm
-  width  Float // in mm
-  height Float // in mm
-
-  // Relationships
+  weight Float
+  length Float
+  width  Float
+  height Float
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
   brandId    String?
   brand      Brand?   @relation(fields: [brandId], references: [id])
-
   thumbnail     String?
   imageUrls     String[]
   variants      ProductVariant[]
@@ -218,13 +228,10 @@ model Product {
   orderItems    OrderItem[]
   wishlistItems WishlistItem[]
   reviews       Review[]
-
-  // SEO & Marketing
   metaTitle  String?
   metaDesc   String?
   isFeatured Boolean @default(false)
   isOnSale   Boolean @default(false)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -232,13 +239,13 @@ model Product {
   @@index([sku])
   @@index([categoryId])
   @@index([status])
-  @@index([type])
+  @@index([productTypeId])
 }
 
 model ProductVariant {
   id            String  @id @default(cuid())
   productId     String
-  name          String // e.g., "White", "600x1200mm"
+  name          String
   sku           String  @unique
   price         Float
   stockQuantity Int     @default(0)
@@ -257,8 +264,8 @@ model ProductVariant {
 
 model Attribute {
   id         String  @id @default(cuid())
-  name       String  @unique // e.g., "Color", "Size", "Material"
-  type       String // "text", "select", "multiselect", "number"
+  name       String  @unique
+  type       String
   isRequired Boolean @default(false)
   sortOrder  Int     @default(0)
 
@@ -288,7 +295,7 @@ model ProductAttribute {
   productId   String
   attributeId String
   valueId     String
-  customValue String? // For text/number attributes
+  customValue String?
 
   product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
   attribute Attribute      @relation(fields: [attributeId], references: [id], onDelete: Cascade)
@@ -298,7 +305,6 @@ model ProductAttribute {
   @@index([productId])
 }
 
-// Shopping Cart
 model CartItem {
   id        String  @id @default(cuid())
   userId    String
@@ -317,7 +323,6 @@ model CartItem {
   @@index([userId])
 }
 
-// Wishlist
 model WishlistItem {
   id        String @id @default(cuid())
   userId    String
@@ -332,7 +337,6 @@ model WishlistItem {
   @@index([userId])
 }
 
-// Orders & Payments
 enum OrderStatus {
   PENDING
   CONFIRMED
@@ -366,38 +370,32 @@ enum DeliveryMethod {
 
 model Order {
   id          String @id @default(cuid())
-  orderNumber String @unique // Human readable order number
+  orderNumber String @unique
   userId      String
 
-  // Order details
   status         OrderStatus    @default(PENDING)
   paymentMethod  PaymentMethod
   paymentStatus  PaymentStatus  @default(PENDING)
   deliveryMethod DeliveryMethod
-  isNewOrder     Boolean        @default(true) // For new orders
+  isNewOrder     Boolean        @default(true)
 
-  // Pricing
   subtotal    Float
   taxAmount   Float
   deliveryFee Float
   discount    Float
   total       Float
 
-  // Addresses
   shippingAddressId String?
   billingAddressId  String?
 
-  // Delivery info
   estimatedDelivery DateTime?
   actualDelivery    DateTime?
   trackingNumber    String?
   deliveryNotes     String?
 
-  // Special instructions
   notes         String?
-  internalNotes String? // Staff only
+  internalNotes String?
 
-  // Relationships
   user            User        @relation(fields: [userId], references: [id])
   shippingAddress Address?    @relation(fields: [shippingAddressId], references: [id])
   items           OrderItem[]
@@ -418,8 +416,8 @@ model OrderItem {
   productId  String
   variantId  String?
   quantity   Int
-  unitPrice  Float // unitPrice * quantity
-  totalPrice Float // unitPrice * quantity
+  unitPrice  Float
+  totalPrice Float
 
   order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product         @relation(fields: [productId], references: [id])
@@ -437,11 +435,9 @@ model Payment {
   method  PaymentMethod
   status  PaymentStatus @default(PENDING)
 
-  // Payment gateway fields
   transactionId   String?
   gatewayResponse String? @db.Text
 
-  // Manual payment fields
   reference String?
   notes     String?
 
@@ -454,15 +450,14 @@ model Payment {
   @@index([status])
 }
 
-// Reviews & Ratings
 model Review {
   id         String  @id @default(cuid())
   userId     String
   productId  String
-  rating     Int // 1-5 stars
+  rating     Int
   title      String?
   comment    String? @db.Text
-  isVerified Boolean @default(false) // Verified purchase
+  isVerified Boolean @default(false)
   isApproved Boolean @default(false)
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -476,12 +471,11 @@ model Review {
   @@index([rating])
 }
 
-// Settings & Configuration
 model Setting {
   id        String   @id @default(cuid())
   key       String   @unique
   value     String   @db.Text
-  type      String   @default("string") // string, number, boolean, json
+  type      String   @default("string")
   group     String   @default("general")
   updatedAt DateTime @updatedAt
 
@@ -519,7 +513,6 @@ model Message {
   @@index([senderId])
 }
 
-//projects schema
 model Project {
   id          String    @id @default(cuid())
   name        String

@@ -57,6 +57,11 @@ export const sidebarLinks: ISidebarLink[] = [
         permission: "categories.read",
       },
       {
+        title: "Product Types",
+        href: "/dashboard/products/types",
+        permission: "products.read",
+      },
+      {
         title: "Brands",
         href: "/dashboard/products/brands",
         permission: "brands.read",
@@ -205,29 +210,29 @@ export const sidebarLinks: ISidebarLink[] = [
   },
 
   // Reports & Analytics
-  {
-    title: "Reports",
-    icon: BarChart3,
-    permission: "reports.read",
-    dropdown: true,
-    dropdownMenu: [
-      {
-        title: "Messages",
-        href: "/dashboard/reports/messages",
-        permission: "reports.read",
-      },
-      {
-        title: "Customer Report",
-        href: "/dashboard/reports/customers",
-        permission: "reports.read",
-      },
-      {
-        title: "Product Performance",
-        href: "/dashboard/reports/products",
-        permission: "reports.read",
-      },
-    ],
-  },
+  // {
+  //   title: "Reports",
+  //   icon: BarChart3,
+  //   permission: "reports.read",
+  //   dropdown: true,
+  //   dropdownMenu: [
+  //     {
+  //       title: "Messages",
+  //       href: "/dashboard/reports/messages",
+  //       permission: "reports.read",
+  //     },
+  //     {
+  //       title: "Customer Report",
+  //       href: "/dashboard/reports/customers",
+  //       permission: "reports.read",
+  //     },
+  //     {
+  //       title: "Product Performance",
+  //       href: "/dashboard/reports/products",
+  //       permission: "reports.read",
+  //     },
+  //   ],
+  // },
 
   // projects Management
   {

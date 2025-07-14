@@ -16,10 +16,6 @@ interface ProductWithDetails extends Product {
     id: string
     title: string
   } | null
-  brand?: {
-    id: string
-    name: string
-  }
 }
 
 interface Category {

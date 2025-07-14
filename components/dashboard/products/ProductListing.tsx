@@ -22,9 +22,10 @@ import { ImageInput } from "@/components/reusable-ui/image-upload"
 import { useRouter } from "next/navigation"
 import { useFileDelete } from "@/hooks/useFileDelete"
 import { formatPrice } from "@/lib/formatPrice"
-import { PRODUCT_TYPES, type ProductCreateData } from "@/types/product"
 import { startTransition } from "react"
 import { getCategoriesForProductSelection } from "@/actions/categories"
+import { getProductTypes } from "@/actions/productTypes"
+
 
 interface ProductsListingProps {
   title: string
@@ -37,7 +38,7 @@ interface Product {
   name: string
   description?: string | null
   shortDesc?: string | null
-  type: string
+  productTypeId?: string | null
   categoryId: string
   price: number
   comparePrice?: number | null
@@ -55,6 +56,11 @@ interface Product {
   isFeatured: boolean
   isOnSale: boolean
   createdAt: Date | string | null | undefined
+  productType?: {
+    id: string
+    name: string
+    slug: string
+  } | null
 }
 
 interface HierarchicalCategory {
@@ -67,12 +73,21 @@ interface HierarchicalCategory {
   level: number
 }
 
-// Form schema for editing/adding products
+interface ProductType {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  isActive: boolean
+  sortOrder: number
+}
+
+// Updated form schema to use productTypeId instead of type enum
 const productFormSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
   shortDesc: z.string().optional(),
-  type: z.enum(["WINDOW", "DOOR", "PROFILE", "ACCESSORY", "GLASS", "HARDWARE"]),
+  productTypeId: z.string().min(1, "Product type is required"),
   categoryId: z.string().min(1, "Category is required"),
   price: z.coerce.number().min(0.01, "Price must be greater than 0"),
   comparePrice: z.coerce.number().optional(),
@@ -88,17 +103,31 @@ const productFormSchema = z.object({
   isOnSale: z.boolean().default(false),
 })
 
+type ProductCreateData = z.infer<typeof productFormSchema> & {
+  thumbnail?: string
+  sku?: string
+  slug?: string
+  brandId?: string
+}
+
 export default function ProductsListing({ title, categoryMap, brandMap }: ProductsListingProps) {
   const [productsData, setProductsData] = useState<Product[]>([])
   const [hierarchicalCategories, setHierarchicalCategories] = useState<HierarchicalCategory[]>([])
+  const [productTypes, setProductTypes] = useState<ProductType[]>([])
   const [loadingCategories, setLoadingCategories] = useState(false)
+  const [loadingProductTypes, setLoadingProductTypes] = useState(false)
   const { products, refetch } = useProductsSuspense()
   const { deleteFile } = useFileDelete()
 
   useEffect(() => {
     if (products) {
       startTransition(() => {
-        setProductsData(products)
+        setProductsData(
+          products.map((p) => ({
+            ...p,
+            productTypeId: p.productTypeId || null,
+          })),
+        )
       })
     }
   }, [products])
@@ -116,6 +145,24 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
       toast.error("Failed to load categories")
     } finally {
       setLoadingCategories(false)
+    }
+  }
+
+  // Fetch product types when form opens
+  const fetchProductTypes = async () => {
+    setLoadingProductTypes(true)
+    try {
+      const result = await getProductTypes()
+      if (result.data) {
+        // Filter only active product types and sort by sortOrder
+        const activeTypes = result.data.filter((type) => type.isActive).sort((a, b) => a.sortOrder - b.sortOrder)
+        setProductTypes(activeTypes)
+      }
+    } catch (error) {
+      console.error("Error fetching product types:", error)
+      toast.error("Failed to load product types")
+    } finally {
+      setLoadingProductTypes(false)
     }
   }
 
@@ -137,7 +184,6 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
   })
 
   const router = useRouter()
-
   const handleProductClick = (product: Product) => {
     router.push(`/dashboard/products/${product.slug}`)
   }
@@ -152,7 +198,7 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
       name: "",
       description: "",
       shortDesc: "",
-      type: "WINDOW",
+      productTypeId: "",
       categoryId: "",
       price: 0,
       comparePrice: 0,
@@ -176,7 +222,7 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
         name: currentProduct.name,
         description: currentProduct.description || "",
         shortDesc: currentProduct.shortDesc || "",
-        type: currentProduct.type as ProductCreateData["type"],
+        productTypeId: currentProduct.productTypeId || "",
         categoryId: currentProduct.categoryId || "",
         price: Number(currentProduct.price),
         comparePrice: currentProduct.comparePrice ? Number(currentProduct.comparePrice) : undefined,
@@ -191,7 +237,6 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
         isFeatured: currentProduct.isFeatured,
         isOnSale: currentProduct.isOnSale,
       })
-
       if (currentProduct.thumbnail) {
         setImageUrl(currentProduct.thumbnail)
         setPreviousImageUrl(currentProduct.thumbnail)
@@ -261,11 +306,18 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
   const getCategoryDisplayName = (categoryId: string) => {
     const category = categoryMap[categoryId]
     if (!category) return "Unknown"
-
     if (category.parentId && category.parent) {
       return `${category.parent.title} → ${category.title}`
     }
     return category.title
+  }
+
+  // Get product type display name
+  const getProductTypeDisplayName = (product: Product) => {
+    if (product.productType) {
+      return product.productType.name
+    }
+    return "Unknown Type"
   }
 
   // Export to Excel
@@ -275,7 +327,7 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
       const exportData = filteredProducts.map((product) => ({
         Name: product.name,
         SKU: product.sku,
-        Type: product.type,
+        Type: getProductTypeDisplayName(product),
         Category: getCategoryDisplayName(product.categoryId),
         Price: product.price,
         "Stock Quantity": product.stockQuantity,
@@ -286,10 +338,8 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
       const worksheet = XLSX.utils.json_to_sheet(exportData)
       const workbook = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(workbook, worksheet, "Products")
-
       const fileName = `Products_${format(new Date(), "yyyy-MM-dd")}.xlsx`
       XLSX.writeFile(workbook, fileName)
-
       toast.success("Export successful", {
         description: `Products exported to ${fileName}`,
       })
@@ -306,13 +356,15 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
   const handleAddClick = () => {
     setCurrentProduct(null)
     setFormDialogOpen(true)
-    fetchHierarchicalCategories() // Load categories when opening form
+    fetchHierarchicalCategories()
+    fetchProductTypes()
   }
 
   const handleEditClick = (product: Product) => {
     setCurrentProduct(product)
     setFormDialogOpen(true)
-    fetchHierarchicalCategories() // Load categories when opening form
+    fetchHierarchicalCategories()
+    fetchProductTypes()
   }
 
   const handleDeleteClick = (product: Product) => {
@@ -331,7 +383,6 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
             console.error("Error deleting product thumbnail:", error)
           }
         }
-
         await deleteProductMutation.mutateAsync(productToDelete.id)
         setDeleteDialogOpen(false)
         refetch()
@@ -343,20 +394,18 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
 
   const onSubmit = async (data: ProductCreateData) => {
     setIsSubmitting(true)
-
     try {
       if (!currentProduct) {
         // Create new product
         const brandName = data.brandId ? brandMap[data.brandId]?.name : null
         const categoryName = data.categoryId ? categoryMap[data.categoryId]?.title : null
-
-        const newProductData: ProductCreateData = {
+        const newProductData: ProductCreateData & { type: string } = {
           ...data,
           thumbnail: imageUrl,
           sku: generateSKU(data.name, brandName, categoryName),
           slug: generateSlug(data.name),
+          type: data.productTypeId, // Ensure 'type' is present as required by backend
         }
-
         await createProductMutation.mutateAsync(newProductData)
         resetFormAndCloseModal()
       } else {
@@ -366,7 +415,7 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
           name: data.name,
           description: data.description,
           shortDesc: data.shortDesc,
-          type: data.type,
+          productTypeId: data.productTypeId,
           price: data.price,
           comparePrice: data.comparePrice,
           costPrice: data.costPrice,
@@ -399,7 +448,6 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
           }
         }
       }
-
       resetFormAndCloseModal()
       refetch()
     } catch (error) {
@@ -435,7 +483,6 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
       cell: (row) => {
         const hasValidThumbnail = Boolean(row.thumbnail && row.thumbnail !== "")
         const imgSrc = hasValidThumbnail ? (row.thumbnail as string) : "/placeholder.jpg"
-
         return (
           <img
             src={imgSrc || "/placeholder.svg"}
@@ -460,10 +507,10 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
     },
     {
       header: "Type",
-      accessorKey: "type",
+      accessorKey: "productType",
       cell: (row) => (
         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {row.type.replace("_", " ")}
+          {getProductTypeDisplayName(row)}
         </span>
       ),
     },
@@ -581,28 +628,39 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
           />
         </div>
 
+        {/* Updated Product Type Selection */}
         <FormField
           control={form.control}
-          name="type"
+          name="productTypeId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Product Type</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select onValueChange={field.onChange} value={field.value} disabled={loadingProductTypes}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select Type" />
+                    <SelectValue placeholder={loadingProductTypes ? "Loading types..." : "Select Product Type"} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   <SelectGroup>
-                    {PRODUCT_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
+                    {productTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{type.name}</span>
+                          {type.description && (
+                            <span className="text-xs text-muted-foreground ml-2">
+                              {type.description.length > 30
+                                ? `${type.description.substring(0, 30)}...`
+                                : type.description}
+                            </span>
+                          )}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>
+              <FormDescription>Select the type/category for this product</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -891,7 +949,6 @@ export default function ProductsListing({ title, categoryMap, brandMap }: Produc
                 />
               </div>
             )}
-
             <ImageInput title="" imageUrl={imageUrl} setImageUrl={handleImageChange} endpoint="productImage" />
             <p className="text-xs text-muted-foreground">
               Upload a high quality image for your product. JPG, PNG, and WebP formats supported (max 1MB).

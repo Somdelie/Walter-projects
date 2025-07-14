@@ -14,6 +14,7 @@ import { toast } from "sonner"
 import ImageGallery from "./ImageGallery"
 import ReviewsSection from "./ReviewsSection"
 import ProductCard from "./ProductCard"
+import { ProductType } from "@prisma/client"
 
 interface ProductWithDetails {
   id: string
@@ -22,7 +23,7 @@ interface ProductWithDetails {
   description: string | null
   shortDesc: string | null
   sku: string
-  type: string
+  type?: string | null
   price: number
   comparePrice: number | null
   stockQuantity: number
@@ -384,7 +385,7 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Type:</span>
-                <span className="font-medium">{product.type.replace("_", " ")}</span>
+                <span className="font-medium">{product.type?.replace("_", " ")}</span>
               </div>
               {product.brand && (
                 <div className="flex justify-between">
@@ -440,7 +441,7 @@ export default function ProductDetail({ product, relatedProducts }: ProductDetai
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Product Type:</span>
-                      <span className="font-medium">{product.type.replace("_", " ")}</span>
+                      <span className="font-medium">{product.type?.replace("_", " ")}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">SKU:</span>

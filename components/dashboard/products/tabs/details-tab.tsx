@@ -6,32 +6,31 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { ImageIcon, Loader2, X } from "lucide-react"
-import type { Product, ProductType } from "@prisma/client"
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import type { Product } from "@prisma/client"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { FormCard } from "../form-card"
 import MultipleImageInput from "@/components/FormInputs/MultipleImageInput"
 import { ImageInput } from "@/components/FormInputs/ImageInput"
 import { useProductUpdate } from "@/hooks/useProductQueries"
 
-interface DetailsTabProps {
-  product: Product
+export type ProductTypeOptions = {
+  value: string
+  label: string
+  description?: string | null
 }
 
-export function DetailsTab({ product }: DetailsTabProps) {
+interface DetailsTabProps {
+  product: Product
+  productTypeOptions: ProductTypeOptions[]
+}
+
+export function DetailsTab({ product, productTypeOptions }: DetailsTabProps) {
   // Enable built-in toasts by removing showToast: false
   const updateProductMutation = useProductUpdate(product.id)
 
   // Consolidated state
   const [formState, setFormState] = useState({
-    type: product.type || "WINDOW",
+    productTypeId: product.productTypeId || "",
     weight: product.weight || 0,
     length: product.length || 0,
     width: product.width || 0,
@@ -66,7 +65,7 @@ export function DetailsTab({ product }: DetailsTabProps) {
   // Simplified update handlers - let React Query handle toasts
   const updateProductType = async () => {
     await updateProductMutation.mutateAsync({
-      type: formState.type as ProductType,
+      productTypeId: formState.productTypeId,
     })
   }
 
@@ -88,7 +87,6 @@ export function DetailsTab({ product }: DetailsTabProps) {
     await updateProductMutation.mutateAsync({
       thumbnail: imageUrl,
     })
-
     // Reset preview state after successful update
     setShowPreview(false)
     setNewUploadUrl("")
@@ -98,7 +96,6 @@ export function DetailsTab({ product }: DetailsTabProps) {
     await updateProductMutation.mutateAsync({
       imageUrls: imageUrls,
     })
-
     // Reset preview state after successful update
     setShowPreview(false)
     setNewUploadUrl("")
@@ -134,10 +131,10 @@ export function DetailsTab({ product }: DetailsTabProps) {
         isLoading={updateProductMutation.isPending}
       >
         <div className="space-y-2">
-          <Label htmlFor="type">Product Type</Label>
+          <Label htmlFor="productTypeId">Product Type</Label>
           <Select
-            value={formState.type}
-            onValueChange={(value) => updateField("type", value)}
+            value={formState.productTypeId}
+            onValueChange={(value) => updateField("productTypeId", value)}
             disabled={updateProductMutation.isPending}
           >
             <SelectTrigger className="w-full">
@@ -145,21 +142,18 @@ export function DetailsTab({ product }: DetailsTabProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Product Types</SelectLabel>
-                <SelectItem value="WINDOW">Window</SelectItem>
-                <SelectItem value="DOOR">Door</SelectItem>
-                <SelectItem value="PROFILE">Profile</SelectItem>
-                <SelectItem value="ACCESSORY">Accessory</SelectItem>
-                <SelectItem value="GLASS">Glass</SelectItem>
-                <SelectItem value="HARDWARE">Hardware</SelectItem>
-                <SelectItem value="BALUSTRADES">Balustrades</SelectItem>
-                <SelectItem value="FACADE">Facade</SelectItem>
-                <SelectItem value="SHUTTER">Shutter</SelectItem>
-                <SelectItem value="BLINDS">Blinds</SelectItem>
-                <SelectItem value="AWNINGS">Awnings</SelectItem>
-                <SelectItem value="GATES">Gates</SelectItem>
-                <SelectItem value="FENCING">Fencing</SelectItem>
-                <SelectItem value="OTHER">Other</SelectItem>
+                {productTypeOptions.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    <div className="flex items-center justify-between w-full">
+                      <span>{type.label}</span>
+                      {type.description && (
+                        <span className="text-xs text-muted-foreground ml-2">
+                          {type.description.length > 30 ? `${type.description.substring(0, 30)}...` : type.description}
+                        </span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -263,14 +257,11 @@ export function DetailsTab({ product }: DetailsTabProps) {
               </div>
             )}
           </div>
-
           {/* Upload + Preview section */}
           <div className="">
             <h3 className="text-sm font-medium mb-2">Upload New Image</h3>
-
             {/* Image uploader */}
             <ImageInput title="" imageUrl={imageUrl} setImageUrl={handleImageUrlChange} endpoint="itemImage" />
-
             {/* Preview appears below the uploader */}
             {showPreview && (
               <div className="mt-2">

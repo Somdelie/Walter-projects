@@ -14,7 +14,7 @@ export default function Providers({ children }: { children: ReactNode }) {
         <QueryProvider>
       <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
       {/* <Toaster position="top-center" reverseOrder={false} /> */}
-      <Toaster />
+      <Toaster richColors/>
       {children}
       </QueryProvider>
     </SessionProvider>
