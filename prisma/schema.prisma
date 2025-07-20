@@ -523,3 +523,15 @@ model Project {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
 }
+
+// gallery model
+model Gallery {
+  id          String    @id @default(cuid())
+  title       String    @unique
+  description String?
+  imageUrl    String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+
+  @@index([title])
+}

@@ -102,6 +102,11 @@ const companyLinks = [
     href: "/projects",
   },
   {
+    title: "Gallery",
+    description: "View our extensive gallery showcasing our products in action",
+    href: "/gallery",
+  },
+  {
     title: "Quality Assurance",
     description: "Discover our rigorous quality control processes",
     href: "/quality",

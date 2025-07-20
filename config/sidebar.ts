@@ -69,6 +69,26 @@ export const sidebarLinks: ISidebarLink[] = [
     ],
   },
 
+  // Gallery Management
+  {
+    title: "Gallery",
+    icon: FolderOpen,
+     permission: "products.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "All Gallery Items",
+        href: "/dashboard/gallery",
+         permission: "products.read",
+      },
+      // {
+      //   title: "Add New Item",
+      //   href: "/dashboard/gallery/create",
+      //    permission: "products.read",
+      // },
+    ],
+  },
+
   // Inventory Management
   {
     title: "Inventory",
@@ -250,6 +270,26 @@ export const sidebarLinks: ISidebarLink[] = [
         title: "Add New Project",
         href: "/dashboard/projects/create",
         permission: "blogs.create",
+      },
+    ],
+  },
+
+  // Gallery Management
+  {
+    title: "Gallery",
+    icon: FolderOpen,
+     permission: "products.read",
+    dropdown: true,
+    dropdownMenu: [
+      {
+        title: "All Gallery Items",
+        href: "/dashboard/gallery",
+         permission: "products.read",
+      },
+      {
+        title: "Add New Item",
+        href: "/dashboard/gallery/create",
+        permission: "gallery.create",
       },
     ],
   },
