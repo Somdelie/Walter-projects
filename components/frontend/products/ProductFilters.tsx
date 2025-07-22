@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Search, X } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search, X } from "lucide-react";
 
 interface Category {
-  id: string
-  title: string
-  description?: string
+  id: string;
+  title: string;
+  description?: string;
 }
 
 interface ProductFiltersProps {
-  categories: Category[]
-  productTypes: { id: string; name: string }[]
+  categories: Category[];
+  productTypes: { id: string; name: string }[];
   searchParams: {
-    category?: string
-    type?: string
-    search?: string
-    sort?: string
-  }
-  onFilterChange?: () => void
+    category?: string;
+    type?: string;
+    search?: string;
+    sort?: string;
+  };
+  onFilterChange?: () => void;
 }
 
 // const PRODUCT_TYPES = [
@@ -48,45 +48,52 @@ interface ProductFiltersProps {
 //   { value: "OTHER", label: "Other" },
 // ]
 
-export default function ProductFilters({ categories,productTypes, searchParams, onFilterChange }: ProductFiltersProps) {
-  const router = useRouter()
-  const urlSearchParams = useSearchParams()
-  const [searchTerm, setSearchTerm] = useState(searchParams.search || "")
+export default function ProductFilters({
+  categories,
+  productTypes,
+  searchParams,
+  onFilterChange,
+}: ProductFiltersProps) {
+  const router = useRouter();
+  const urlSearchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.search || "");
 
   const PRODUCT_TYPES = productTypes.map((type) => ({
     value: type.id,
     label: type.name,
-  }))
+  }));
 
   const updateFilter = (key: string, value: string | null) => {
-    const params = new URLSearchParams(urlSearchParams.toString())
+    const params = new URLSearchParams(urlSearchParams.toString());
     if (value) {
-      params.set(key, value)
+      params.set(key, value);
     } else {
-      params.delete(key)
+      params.delete(key);
     }
     // Reset to first page when filtering
-    params.delete("page")
-    router.push(`/products?${params.toString()}`)
-    onFilterChange?.()
-  }
+    params.delete("page");
+    router.push(`/products?${params.toString()}`);
+    onFilterChange?.();
+  };
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    updateFilter("search", searchTerm || null)
-  }
+    e.preventDefault();
+    updateFilter("search", searchTerm || null);
+  };
 
   const clearSearch = () => {
-    setSearchTerm("")
-    updateFilter("search", null)
-  }
+    setSearchTerm("");
+    updateFilter("search", null);
+  };
 
   return (
     <div className="sticky top-4 space-y-4 lg:space-y-6">
       {/* Search */}
       <Card className="shadow-sm">
         <CardHeader className="pb-3 px-4 lg:px-6">
-          <CardTitle className="text-base lg:text-lg">Search Products</CardTitle>
+          <CardTitle className="text-base lg:text-lg">
+            Search Products
+          </CardTitle>
         </CardHeader>
         <CardContent className="px-4 lg:px-6">
           <form onSubmit={handleSearch} className="space-y-3">
@@ -131,7 +138,10 @@ export default function ProductFilters({ categories,productTypes, searchParams, 
                 onCheckedChange={() => updateFilter("category", null)}
                 className="h-4 w-4"
               />
-              <Label htmlFor="all-categories" className="text-sm font-medium cursor-pointer">
+              <Label
+                htmlFor="all-categories"
+                className="text-sm font-medium cursor-pointer"
+              >
                 All Categories
               </Label>
             </div>
@@ -149,7 +159,9 @@ export default function ProductFilters({ categories,productTypes, searchParams, 
                     <Checkbox
                       id={`category-${category.id}`}
                       checked={searchParams.category === category.id}
-                      onCheckedChange={(checked) => updateFilter("category", checked ? category.id : null)}
+                      onCheckedChange={(checked) =>
+                        updateFilter("category", checked ? category.id : null)
+                      }
                       className="h-4 w-4"
                     />
                     <Label
@@ -181,36 +193,43 @@ export default function ProductFilters({ categories,productTypes, searchParams, 
                 onCheckedChange={() => updateFilter("type", null)}
                 className="h-4 w-4"
               />
-              <Label htmlFor="all-types" className="text-sm font-medium cursor-pointer">
+              <Label
+                htmlFor="all-types"
+                className="text-sm font-medium cursor-pointer"
+              >
                 All Types
               </Label>
             </div>
 
             {/* Product Types List */}
-               <ScrollArea className="h-[200px] lg:h-[250px] pr-2">  <div className="space-y-2">
-              {PRODUCT_TYPES.map((type) => (
-                <motion.div
-                  key={type.value}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center space-x-2 py-1"
-                >
-                  <Checkbox
-                    id={`type-${type.value}`}
-                    checked={searchParams.type === type.value}
-                    onCheckedChange={(checked) => updateFilter("type", checked ? type.value : null)}
-                    className="h-4 w-4"
-                  />
-                  <Label
-                    htmlFor={`type-${type.value}`}
-                    className="text-sm cursor-pointer hover:text-blue-600 transition-colors leading-relaxed flex-1"
+            <ScrollArea className="h-[200px] lg:h-[250px] pr-2">
+              {" "}
+              <div className="space-y-2">
+                {PRODUCT_TYPES.map((type) => (
+                  <motion.div
+                    key={type.value}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center space-x-2 py-1"
                   >
-                    {type.label}
-                  </Label>
-                </motion.div>
-              ))}
-            </div></ScrollArea>
-          
+                    <Checkbox
+                      id={`type-${type.value}`}
+                      checked={searchParams.type === type.value}
+                      onCheckedChange={(checked) =>
+                        updateFilter("type", checked ? type.value : null)
+                      }
+                      className="h-4 w-4"
+                    />
+                    <Label
+                      htmlFor={`type-${type.value}`}
+                      className="text-sm cursor-pointer hover:text-blue-600 transition-colors leading-relaxed flex-1"
+                    >
+                      {type.label}
+                    </Label>
+                  </motion.div>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         </CardContent>
       </Card>
@@ -219,14 +238,22 @@ export default function ProductFilters({ categories,productTypes, searchParams, 
       {(searchParams.category || searchParams.type || searchParams.search) && (
         <Card className="shadow-sm">
           <CardHeader className="pb-3 px-4 lg:px-6">
-            <CardTitle className="text-base lg:text-lg">Active Filters</CardTitle>
+            <CardTitle className="text-base lg:text-lg">
+              Active Filters
+            </CardTitle>
           </CardHeader>
           <CardContent className="px-4 lg:px-6 pb-4">
             <div className="space-y-2">
               {searchParams.category && (
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="secondary" className="text-xs max-w-[180px] truncate">
-                    {categories.find((c) => c.id === searchParams.category)?.title}
+                  <Badge
+                    variant="secondary"
+                    className="text-xs max-w-[180px] truncate"
+                  >
+                    {
+                      categories.find((c) => c.id === searchParams.category)
+                        ?.title
+                    }
                   </Badge>
                   <Button
                     variant="ghost"
@@ -240,8 +267,14 @@ export default function ProductFilters({ categories,productTypes, searchParams, 
               )}
               {searchParams.type && (
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="secondary" className="text-xs max-w-[180px] truncate">
-                    {PRODUCT_TYPES.find((t) => t.value === searchParams.type)?.label}
+                  <Badge
+                    variant="secondary"
+                    className="text-xs max-w-[180px] truncate"
+                  >
+                    {
+                      PRODUCT_TYPES.find((t) => t.value === searchParams.type)
+                        ?.label
+                    }
                   </Badge>
                   <Button
                     variant="ghost"
@@ -255,7 +288,10 @@ export default function ProductFilters({ categories,productTypes, searchParams, 
               )}
               {searchParams.search && (
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="secondary" className="text-xs max-w-[180px] truncate">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs max-w-[180px] truncate"
+                  >
                     "{searchParams.search}"
                   </Badge>
                   <Button
@@ -273,5 +309,5 @@ export default function ProductFilters({ categories,productTypes, searchParams, 
         </Card>
       )}
     </div>
-  )
+  );
 }
