@@ -73,40 +73,60 @@ export async function updateUserRole(
 }
 export async function createRole(data: RoleFormData) {
   try {
-    // Validate permissions
-    const validPermissions = getAllPermissions();
-    const invalidPermissions = data.permissions.filter(
-      (permission) => !validPermissions.includes(permission)
+    const role = await db.$transaction(
+      async (tx) => {
+        const newRole = await tx.role.create({
+          data: {
+            name: data.displayName,
+            description: data.description,
+            type: "CUSTOM", // or whatever RoleType you use
+          },
+        });
+
+        for (const permissionKey of data.permissions) {
+          const [action, resource] = permissionKey.split(":");
+          const actionEnum = actionMap[action.toLowerCase()] || "READ";
+          const resourceEnum = resourceMap[resource.toLowerCase()] || "ALL";
+
+          const permission = await tx.permission.upsert({
+            where: {
+              action_resource: {
+                action: actionEnum,
+                resource: resourceEnum,
+              },
+            },
+            update: {},
+            create: {
+              name: permissionKey,
+              action: actionEnum,
+              resource: resourceEnum,
+              description: permissionKey,
+            },
+          });
+
+          await tx.rolePermission.upsert({
+            where: {
+              roleId_permissionId: {
+                roleId: newRole.id,
+                permissionId: permission.id,
+              },
+            },
+            update: {},
+            create: {
+              roleId: newRole.id,
+              permissionId: permission.id,
+            },
+          });
+        }
+
+        return newRole;
+      },
+      {
+        timeout: 30000, // optional: increase timeout
+      }
     );
 
-    if (invalidPermissions.length > 0) {
-      throw new Error(
-        `Invalid permissions detected: ${invalidPermissions.join(", ")}`
-      );
-    }
-
-    // Check if role with same name exists
-    const existingRole = await db.role.findFirst({
-      where: {
-        displayName: data.displayName,
-      },
-    });
-
-    if (existingRole) {
-      throw new Error("A role with this name already exists");
-    }
-
-    // Create role with permissions
-    const role = await db.role.create({
-      data: {
-        displayName: data.displayName,
-        roleName: createRoleName(data.displayName),
-        description: data.description,
-        permissions: data.permissions,
-      },
-    });
-
-    revalidatePath("/dashboard/users/roles");
+    revalidatePath("/dashboard/roles");
     return { success: true, data: role };
   } catch (error) {
     console.error("Error creating role:", error);

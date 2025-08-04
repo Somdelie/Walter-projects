@@ -1,79 +1,52 @@
-// app/api/upload/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { initializeApp } from "firebase/app";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { v4 as uuid4 } from "uuid";
-
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const storage = getStorage(app);
+import { type NextRequest, NextResponse } from "next/server";
+import { put } from "@vercel/blob"; // Import the put function from Vercel Blob
+import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
+  const { searchParams } = new URL(request.url);
+  const filename = searchParams.get("filename");
 
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      return NextResponse.json(
-        { error: "Only image files are allowed" },
-        { status: 400 }
-      );
-    }
-
-    // Validate file size (1MB limit)
-    if (file.size > 1024 * 1024) {
-      return NextResponse.json(
-        { error: "File size exceeds 1MB limit" },
-        { status: 400 }
-      );
-    }
-
-    // Convert file to array buffer
-    const buffer = await file.arrayBuffer();
-
-    // Generate a unique filename
-    const fileExtension = file.name.split(".").pop();
-    const fileName = `${uuid4()}.${fileExtension}`;
-
-    // Create a storage reference
-    const storageRef = ref(storage, `items/${fileName}`);
-
-    // Upload file (using simpler uploadBytes instead of uploadBytesResumable)
-    await uploadBytes(storageRef, new Uint8Array(buffer));
-
-    // Get the download URL
-    const downloadURL = await getDownloadURL(storageRef);
-
-    // Return success response with the URL
+  if (!filename) {
     return NextResponse.json(
-      {
-        url: downloadURL,
-        fileName: fileName,
-        size: file.size,
-        type: file.type,
-      },
+      { error: "Filename is required" },
+      { status: 400 }
+    );
+  }
+
+  // Ensure the request body is a Blob or File
+  if (!request.body) {
+    return NextResponse.json(
+      { error: "Request body is empty" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // Generate a unique filename to prevent overwrites and ensure immutability [^2]
+    const fileExtension = filename.split(".").pop();
+    const uniqueFilename = `${uuidv4()}.${fileExtension}`;
+
+    // Upload the file directly to Vercel Blob
+    // The 'put' function handles the actual upload to your Vercel Blob store
+    const blob = await put(uniqueFilename, request.body, {
+      access: "public", // Make the uploaded blob publicly accessible
+      // You can add more options here, e.g., contentType, addRandomSuffix
+      // contentType: request.headers.get('content-type') || undefined, // Infer content type from request
+    });
+
+    // The 'blob' object contains the URL of the uploaded file
+    return NextResponse.json(
+      { url: blob.url, filename: blob.pathname },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Server error:", error);
+    console.error("Vercel Blob upload error:", error);
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error
+            ? error.message
+            : "An unknown error occurred during upload",
       },
       { status: 500 }
     );
