@@ -1,11 +1,10 @@
 "use server";
-
 import { revalidatePath } from "next/cache";
-import { RoleFormData } from "@/types/types";
-import { getAllPermissions, isValidPermission } from "@/config/permissions";
+import type { RoleFormData } from "@/types/types";
+import { getAllPermissions } from "@/config/permissions";
 import { db } from "@/prisma/db";
 import { createRoleName } from "@/lib/createRoleName";
-import { UpdateUserRoleResponse } from "@/types/types";
+import type { UpdateUserRoleResponse } from "@/types/types";
 
 export async function updateUserRole(
   userId: string,
@@ -17,7 +16,6 @@ export async function updateUserRole(
       where: { id: userId },
       include: { roles: true },
     });
-
     if (!existingUser) {
       return {
         error: "User not found",
@@ -25,12 +23,10 @@ export async function updateUserRole(
         data: null,
       };
     }
-
     // Check if role exists
     const role = await db.role.findUnique({
       where: { id: roleId },
     });
-
     if (!role) {
       return {
         error: "Role not found",
@@ -38,7 +34,6 @@ export async function updateUserRole(
         data: null,
       };
     }
-
     // Update user's roles
     const updatedUser = await db.user.update({
       where: { id: userId },
@@ -52,11 +47,9 @@ export async function updateUserRole(
         roles: true,
       },
     });
-
     // Revalidate relevant paths
     revalidatePath("/dashboard/users");
     revalidatePath(`/dashboard/users/${userId}`);
-
     return {
       error: null,
       status: 200,
@@ -71,61 +64,27 @@ export async function updateUserRole(
     };
   }
 }
+
 export async function createRole(data: RoleFormData) {
   try {
     const role = await db.$transaction(
       async (tx) => {
         const newRole = await tx.role.create({
           data: {
-            name: data.displayName,
+            displayName: data.displayName, // Corrected field name
+            roleName: createRoleName(data.displayName), // Added required unique field
             description: data.description,
-            type: "CUSTOM", // or whatever RoleType you use
+            permissions: data.permissions, // Directly assign the array of strings
+            // Removed 'type' as it's not in the Role model
           },
         });
-
-        for (const permissionKey of data.permissions) {
-          const [action, resource] = permissionKey.split(":");
-          const actionEnum = actionMap[action.toLowerCase()] || "READ";
-          const resourceEnum = resourceMap[resource.toLowerCase()] || "ALL";
-
-          const permission = await tx.permission.upsert({
-            where: {
-              action_resource: {
-                action: actionEnum,
-                resource: resourceEnum,
-              },
-            },
-            update: {},
-            create: {
-              name: permissionKey,
-              action: actionEnum,
-              resource: resourceEnum,
-              description: permissionKey,
-            },
-          });
-
-          await tx.rolePermission.upsert({
-            where: {
-              roleId_permissionId: {
-                roleId: newRole.id,
-                permissionId: permission.id,
-              },
-            },
-            update: {},
-            create: {
-              roleId: newRole.id,
-              permissionId: permission.id,
-            },
-          });
-        }
-
+        // Removed the loop for creating Permission and RolePermission as they don't exist in the schema
         return newRole;
       },
       {
         timeout: 30000, // optional: increase timeout
       }
     );
-
     revalidatePath("/dashboard/roles");
     return { success: true, data: role };
   } catch (error) {
@@ -145,14 +104,12 @@ export async function updateRole(id: string, data: Partial<RoleFormData>) {
       const invalidPermissions = data.permissions.filter(
         (permission) => !validPermissions.includes(permission)
       );
-
       if (invalidPermissions.length > 0) {
         throw new Error(
           `Invalid permissions detected: ${invalidPermissions.join(", ")}`
         );
       }
     }
-
     // Check if new name conflicts with existing role
     if (data.displayName) {
       const existingRole = await db.role.findFirst({
@@ -163,12 +120,10 @@ export async function updateRole(id: string, data: Partial<RoleFormData>) {
           },
         },
       });
-
       if (existingRole) {
         throw new Error("A role with this name already exists");
       }
     }
-
     // Update role
     const role = await db.role.update({
       where: { id },
@@ -181,7 +136,6 @@ export async function updateRole(id: string, data: Partial<RoleFormData>) {
         ...(data.permissions && { permissions: data.permissions }),
       },
     });
-
     revalidatePath("/dashboard/users/roles");
     return { success: true, data: role };
   } catch (error) {
@@ -208,11 +162,9 @@ export async function deleteRole(id: string) {
         id: true,
       },
     });
-
     if (usersWithRole.length > 0) {
       throw new Error("Cannot delete role as it is assigned to users");
     }
-
     // Delete role
     await db.role.delete({
       where: { id },
@@ -250,11 +202,9 @@ export async function getRoleById(id: string) {
     const role = await db.role.findUnique({
       where: { id },
     });
-
     if (!role) {
       throw new Error("Role not found");
     }
-
     return { success: true, data: role };
   } catch (error) {
     console.error("Error fetching role:", error);
@@ -282,7 +232,6 @@ export async function getUsersByRole(roleId: string) {
         email: true,
       },
     });
-
     return { success: true, data: users };
   } catch (error) {
     console.error("Error fetching users by role:", error);
