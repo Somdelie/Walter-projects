@@ -1,14 +1,15 @@
-import { Suspense } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ShoppingBag, Package, Clock, CheckCircle } from "lucide-react"
-import { getUserOrders } from "@/actions/orders"
-import { OrderCard } from "@/components/frontend/orders/OrderCard"
-import { OrdersLoading } from "@/components/frontend/orders/OrdersLoading"
-import { OrdersEmptyState } from "@/components/frontend/orders/OrdersEmptyState"
+import { Suspense } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingBag, Package, Clock, CheckCircle } from "lucide-react";
+import { getUserOrders } from "@/actions/orders";
+import { OrderCard } from "@/components/frontend/orders/OrderCard";
+import { OrdersLoading } from "@/components/frontend/orders/OrdersLoading";
+import { OrdersEmptyState } from "@/components/frontend/orders/OrdersEmptyState";
+import TrackPurchaseEvent from "@/components/frontend/orders/TrackPurchaseEvent";
 
 async function OrdersContent() {
-  const { data: orders, error } = await getUserOrders()
+  const { data: orders, error } = await getUserOrders();
 
   if (error) {
     return (
@@ -17,24 +18,28 @@ async function OrdersContent() {
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
             <Package className="w-8 h-8 text-red-600" />
           </div>
-          <h3 className="text-xl font-semibold mb-2 text-red-600">Error Loading Orders</h3>
+          <h3 className="text-xl font-semibold mb-2 text-red-600">
+            Error Loading Orders
+          </h3>
           <p className="text-muted-foreground">{error}</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (!orders || orders.length === 0) {
-    return <OrdersEmptyState />
+    return <OrdersEmptyState />;
   }
 
   // Calculate order statistics
   const stats = {
     total: orders.length,
-    pending: orders.filter((order) => ["PENDING", "CONFIRMED", "PROCESSING"].includes(order.status)).length,
+    pending: orders.filter((order) =>
+      ["PENDING", "CONFIRMED", "PROCESSING"].includes(order.status)
+    ).length,
     shipped: orders.filter((order) => order.status === "SHIPPED").length,
     delivered: orders.filter((order) => order.status === "DELIVERED").length,
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -108,19 +113,24 @@ async function OrdersContent() {
 
         <div className="space-y-4">
           {orders.map((order, index) => (
-            <OrderCard key={order.id} order={order} index={index} />
+            <div key={order.id}>
+              <OrderCard order={order} index={index} />
+              <TrackPurchaseEvent order={order} />
+            </div>
           ))}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default function OrdersPage() {
   return (
     <div className="container max-w-6xl mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 animate-in fade-in slide-in-from-top-4 duration-500">My Orders</h1>
+        <h1 className="text-3xl font-bold mb-2 animate-in fade-in slide-in-from-top-4 duration-500">
+          My Orders
+        </h1>
         <p className="text-muted-foreground animate-in fade-in slide-in-from-top-4 duration-500 delay-100">
           Track and manage your order history
         </p>
@@ -130,5 +140,5 @@ export default function OrdersPage() {
         <OrdersContent />
       </Suspense>
     </div>
-  )
+  );
 }
